@@ -15,6 +15,7 @@ struct SidebarView: View {
     @State private var draggedWorktreeId: UUID?
     @State private var dropTargetId: UUID?
     @State private var showUpdateAlert = false
+    @State private var showSettings = false
 
     var body: some View {
         VStack(spacing: 0) {
@@ -44,6 +45,10 @@ struct SidebarView: View {
                 }
 
                 Spacer()
+
+                IconButton(icon: "gearshape") {
+                    showSettings = true
+                }
 
                 IconButton(icon: "plus") {
                     showingAddRepo = true
@@ -80,6 +85,9 @@ struct SidebarView: View {
         }
         .sheet(item: $worktreeSheetRepoId) { repoId in
             AddWorktreeSheet(repositoryId: repoId)
+        }
+        .sheet(isPresented: $showSettings) {
+            SettingsView()
         }
         .alert("Remove Repository?", isPresented: Binding(
             get: { repoToRemove != nil },

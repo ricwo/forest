@@ -71,7 +71,7 @@ class AppState {
     }
 
     init(forestDirectory: URL? = nil, persistChanges: Bool = true) {
-        let dir = forestDirectory ?? FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("forest")
+        let dir = forestDirectory ?? SettingsService.shared.forestDirectory
         self.forestDirectory = dir
         self.configURL = dir.appendingPathComponent(".forest-config.json")
         self.persistChanges = persistChanges
