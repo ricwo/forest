@@ -92,32 +92,74 @@ final class UpdateService {
     }
 
     func installUpdate() {
-        // Run the install script which handles the update
+        guard let downloadURL = downloadURL else { return }
+
+        // Create temp directory for download
+        let tempDir = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        try? FileManager.default.createDirectory(at: tempDir, withIntermediateDirectories: true)
+        let dmgPath = tempDir.appendingPathComponent("forest.dmg")
+
+        // Download DMG silently
+        URLSession.shared.downloadTask(with: downloadURL) { [weak self] localURL, _, error in
+            guard let self = self,
+                  let localURL = localURL,
+                  error == nil else {
+                print("Failed to download update: \(error?.localizedDescription ?? "unknown")")
+                return
+            }
+
+            do {
+                try FileManager.default.moveItem(at: localURL, to: dmgPath)
+                DispatchQueue.main.async {
+                    self.performUpdate(dmgPath: dmgPath, tempDir: tempDir)
+                }
+            } catch {
+                print("Failed to move downloaded file: \(error)")
+            }
+        }.resume()
+    }
+
+    private func performUpdate(dmgPath: URL, tempDir: URL) {
+        let pid = ProcessInfo.processInfo.processIdentifier
+
+        // Create update script that runs after app quits
         let script = """
-            curl -fsSL https://raw.githubusercontent.com/\(repo)/main/install.sh | bash && open /Applications/forest.app
+        #!/bin/bash
+        # Mount DMG silently
+        MOUNT_DIR=$(hdiutil attach "\(dmgPath.path)" -nobrowse -quiet | grep "/Volumes" | sed 's/.*\\(\\/Volumes\\/.*\\)/\\1/')
+
+        # Replace app
+        rm -rf /Applications/forest.app
+        cp -R "$MOUNT_DIR/forest.app" /Applications/
+
+        # Cleanup
+        hdiutil detach "$MOUNT_DIR" -quiet
+        xattr -cr /Applications/forest.app 2>/dev/null || true
+        rm -rf "\(tempDir.path)"
+
+        # Wait for old app to quit, then open new one
+        while kill -0 \(pid) 2>/dev/null; do
+            sleep 0.1
+        done
+        open /Applications/forest.app
         """
 
-        let process = Process()
-        process.executableURL = URL(fileURLWithPath: "/bin/zsh")
-        process.arguments = ["-c", script]
+        let scriptPath = tempDir.appendingPathComponent("update.sh")
+        do {
+            try script.write(to: scriptPath, atomically: true, encoding: .utf8)
 
-        // Run in Terminal so user can see progress
-        let terminalScript = """
-            tell application "Terminal"
-                activate
-                do script "curl -fsSL https://raw.githubusercontent.com/\(repo)/main/install.sh | bash && open /Applications/forest.app"
-            end tell
-        """
+            // Run script in background (detached from Terminal)
+            let process = Process()
+            process.executableURL = URL(fileURLWithPath: "/bin/bash")
+            process.arguments = [scriptPath.path]
+            process.standardOutput = FileHandle.nullDevice
+            process.standardError = FileHandle.nullDevice
+            try process.run()
 
-        let appleScript = Process()
-        appleScript.executableURL = URL(fileURLWithPath: "/usr/bin/osascript")
-        appleScript.arguments = ["-e", terminalScript]
-
-        try? appleScript.run()
-
-        // Quit current app after a short delay
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+            // Quit app so update can proceed
             NSApplication.shared.terminate(nil)
+        } catch {
+            print("Failed to run update script: \(error)")
         }
     }
 
