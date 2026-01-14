@@ -41,23 +41,44 @@ struct ContentView: View {
 
 struct EmptyStateView: View {
     var body: some View {
-        VStack(spacing: Spacing.lg) {
-            Image(systemName: "arrow.left.circle")
-                .font(.system(size: 44, weight: .ultraLight))
-                .foregroundColor(.textMuted)
+        VStack(spacing: Spacing.xl) {
+            // Subtle decorative element
+            ZStack {
+                // Background rings
+                ForEach(0..<3) { i in
+                    Circle()
+                        .strokeBorder(Color.border.opacity(0.5 - Double(i) * 0.15), lineWidth: 1)
+                        .frame(width: CGFloat(60 + i * 30), height: CGFloat(60 + i * 30))
+                }
 
-            VStack(spacing: Spacing.xs) {
+                Image(systemName: "arrow.triangle.branch")
+                    .font(.system(size: 24, weight: .light))
+                    .foregroundColor(.textMuted)
+            }
+
+            VStack(spacing: Spacing.sm) {
                 Text("Select a worktree")
-                    .font(.bodyMedium)
+                    .font(.headline)
                     .foregroundColor(.textSecondary)
 
-                Text("Choose a worktree from the sidebar to view details")
+                Text("Choose from the sidebar to view details")
                     .font(.caption)
                     .foregroundColor(.textTertiary)
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color.bgElevated)
+        .background(
+            ZStack {
+                Color.bgElevated
+
+                // Subtle gradient overlay
+                LinearGradient(
+                    colors: [Color.accent.opacity(0.02), Color.clear],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+            }
+        )
     }
 }
 

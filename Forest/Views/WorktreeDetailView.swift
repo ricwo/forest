@@ -461,39 +461,46 @@ struct ClaudeSessionRow: View {
 
     var body: some View {
         Button(action: onContinue) {
-            HStack(spacing: Spacing.sm) {
-                Image("ClaudeLogo")
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
-                    .frame(width: 18, height: 18)
+            HStack(spacing: Spacing.md) {
+                // Logo with subtle background
+                ZStack {
+                    RoundedRectangle(cornerRadius: 6, style: .continuous)
+                        .fill(Color.bgSubtle)
+                        .frame(width: 32, height: 32)
 
-                VStack(alignment: .leading, spacing: Spacing.xxs) {
+                    Image("ClaudeLogo")
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .frame(width: 16, height: 16)
+                }
+
+                VStack(alignment: .leading, spacing: 3) {
                     Text(session.title)
-                        .font(.bodyRegular)
+                        .font(.bodyMedium)
                         .foregroundColor(.textPrimary)
                         .lineLimit(1)
                         .truncationMode(.tail)
 
-                    HStack(spacing: Spacing.sm) {
+                    HStack(spacing: Spacing.xs) {
                         Text(session.relativeTime)
                             .font(.caption)
                             .foregroundColor(.textTertiary)
 
-                        Text("·")
-                            .font(.caption)
-                            .foregroundColor(.textMuted)
+                        Circle()
+                            .fill(Color.textMuted)
+                            .frame(width: 3, height: 3)
 
-                        Text("\(session.messageCount) messages")
+                        Text("\(session.messageCount) msgs")
                             .font(.caption)
                             .foregroundColor(.textTertiary)
 
                         if let branch = session.primaryBranch {
-                            Text("·")
-                                .font(.caption)
-                                .foregroundColor(.textMuted)
+                            Circle()
+                                .fill(Color.textMuted)
+                                .frame(width: 3, height: 3)
 
                             Text(branch)
-                                .font(.mono)
+                                .font(.monoSmall)
                                 .foregroundColor(.textTertiary)
                                 .lineLimit(1)
                         }
@@ -502,23 +509,30 @@ struct ClaudeSessionRow: View {
 
                 Spacer()
 
-                if isHovering {
-                    Image(systemName: "arrow.right.circle")
-                        .font(.system(size: 14))
-                        .foregroundColor(.accent)
-                }
+                // Continue indicator
+                Image(systemName: "arrow.right")
+                    .font(.system(size: 11, weight: .semibold))
+                    .foregroundColor(isHovering ? .accent : .textMuted)
+                    .padding(6)
+                    .background(
+                        Circle()
+                            .fill(isHovering ? Color.accentLight : Color.clear)
+                    )
             }
-            .padding(Spacing.md)
-            .background(isHovering ? Color.bgHover : Color.bg)
-            .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+            .padding(.horizontal, Spacing.md)
+            .padding(.vertical, Spacing.sm)
+            .background(
+                RoundedRectangle(cornerRadius: 10, style: .continuous)
+                    .fill(isHovering ? Color.bgHover : Color.bgSubtle)
+            )
             .overlay(
-                RoundedRectangle(cornerRadius: 8, style: .continuous)
-                    .strokeBorder(isHovering ? Color.accent.opacity(0.3) : Color.border, lineWidth: 1)
+                RoundedRectangle(cornerRadius: 10, style: .continuous)
+                    .strokeBorder(isHovering ? Color.accent.opacity(0.2) : Color.border.opacity(0.5), lineWidth: 1)
             )
         }
         .buttonStyle(.plain)
         .onHover { isHovering = $0 }
-        .animation(.easeOut(duration: 0.15), value: isHovering)
+        .animation(.snappy, value: isHovering)
     }
 }
 
@@ -532,38 +546,56 @@ struct ActionButton: View {
     var customImage: String? = nil
 
     @State private var isHovering = false
+    @State private var isPressed = false
 
     var body: some View {
         Button(action: action) {
             VStack(spacing: Spacing.sm) {
-                if let imageName = customImage {
-                    Image(imageName)
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
-                        .frame(width: 20, height: 20)
-                } else {
-                    Image(systemName: icon)
-                        .font(.system(size: 20, weight: .light))
-                        .foregroundColor(isHovering ? .accent : .textSecondary)
+                ZStack {
+                    // Icon background
+                    RoundedRectangle(cornerRadius: 8, style: .continuous)
+                        .fill(isHovering ? Color.accentLight : Color.bgSubtle)
+                        .frame(width: 36, height: 36)
+
+                    if let imageName = customImage {
+                        Image(imageName)
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
+                            .frame(width: 18, height: 18)
+                    } else {
+                        Image(systemName: icon)
+                            .font(.system(size: 16, weight: .medium))
+                            .foregroundColor(isHovering ? .accent : .textSecondary)
+                    }
                 }
 
                 Text(label)
                     .font(.captionMedium)
-                    .foregroundColor(.textSecondary)
+                    .foregroundColor(isHovering ? .textPrimary : .textSecondary)
 
                 ShortcutBadge(shortcut)
             }
-            .frame(width: 80, height: 80)
-            .background(isHovering ? Color.bgHover : Color.bg)
-            .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
-            .overlay(
-                RoundedRectangle(cornerRadius: 10, style: .continuous)
-                    .strokeBorder(isHovering ? Color.accent.opacity(0.3) : Color.border, lineWidth: 1)
+            .frame(width: 76, height: 88)
+            .background(
+                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    .fill(Color.bgElevated)
             )
+            .overlay(
+                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    .strokeBorder(isHovering ? Color.accent.opacity(0.25) : Color.border, lineWidth: isHovering ? 1.5 : 1)
+            )
+            .subtleShadow()
         }
         .buttonStyle(.plain)
+        .scaleEffect(isPressed ? 0.96 : (isHovering ? 1.02 : 1))
         .onHover { isHovering = $0 }
-        .animation(.easeOut(duration: 0.15), value: isHovering)
+        .simultaneousGesture(
+            DragGesture(minimumDistance: 0)
+                .onChanged { _ in isPressed = true }
+                .onEnded { _ in isPressed = false }
+        )
+        .animation(.snappy, value: isHovering)
+        .animation(.quick, value: isPressed)
     }
 }
 

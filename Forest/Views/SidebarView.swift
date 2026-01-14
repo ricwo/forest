@@ -103,26 +103,48 @@ struct SidebarView: View {
     }
 
     private var emptyState: some View {
-        VStack(spacing: Spacing.md) {
+        VStack(spacing: Spacing.lg) {
             Spacer()
 
-            Image(systemName: "folder.badge.plus")
-                .font(.system(size: 36, weight: .light))
-                .foregroundColor(.textMuted)
+            // Tree illustration
+            ZStack {
+                Circle()
+                    .fill(Color.accentLight)
+                    .frame(width: 72, height: 72)
 
-            VStack(spacing: Spacing.xs) {
-                Text("No repositories")
-                    .font(.bodyMedium)
-                    .foregroundColor(.textSecondary)
+                Image(systemName: "tree.fill")
+                    .font(.system(size: 28, weight: .light))
+                    .foregroundColor(.accent)
+            }
 
-                Text("Add a repository to get started")
+            VStack(spacing: Spacing.sm) {
+                Text("Plant your first tree")
+                    .font(.headline)
+                    .foregroundColor(.textPrimary)
+
+                Text("Add a repository to start\nmanaging worktrees")
                     .font(.caption)
                     .foregroundColor(.textTertiary)
+                    .multilineTextAlignment(.center)
+                    .lineSpacing(2)
             }
+
+            Button {
+                showingAddRepo = true
+            } label: {
+                HStack(spacing: Spacing.sm) {
+                    Image(systemName: "plus")
+                        .font(.system(size: 11, weight: .semibold))
+                    Text("Add Repository")
+                }
+            }
+            .buttonStyle(AccentButtonStyle())
+            .padding(.top, Spacing.sm)
 
             Spacer()
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .padding()
     }
 
     @ViewBuilder
