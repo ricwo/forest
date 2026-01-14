@@ -287,7 +287,7 @@ struct ShortcutBadge: View {
 
 struct SectionHeader: View {
     let title: String
-    var icon: String? = nil
+    var icon: String?
 
     var body: some View {
         HStack(spacing: Spacing.xs) {
