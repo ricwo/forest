@@ -4,6 +4,8 @@ struct SettingsView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var forestPath: String = SettingsService.shared.forestDirectory.path
     @State private var showingFolderPicker = false
+    @State private var selectedEditor: Editor = SettingsService.shared.defaultEditor
+    @State private var branchPrefix: String = SettingsService.shared.branchPrefix
 
     var body: some View {
         VStack(spacing: 0) {
@@ -21,21 +23,77 @@ struct SettingsView: View {
             .padding(.bottom, Spacing.lg)
 
             // Content
-            VStack(alignment: .leading, spacing: Spacing.lg) {
-                VStack(alignment: .leading, spacing: Spacing.sm) {
-                    SectionHeader(title: "Forest Directory")
+            ScrollView {
+                VStack(alignment: .leading, spacing: Spacing.lg) {
+                    // Forest Directory
+                    VStack(alignment: .leading, spacing: Spacing.sm) {
+                        SectionHeader(title: "Forest Directory")
 
-                    Text("Where worktrees are stored")
-                        .font(.caption)
-                        .foregroundColor(.textTertiary)
+                        Text("Where worktrees are stored")
+                            .font(.caption)
+                            .foregroundColor(.textTertiary)
 
-                    HStack(spacing: Spacing.sm) {
-                        Text(forestPath)
-                            .font(.mono)
-                            .foregroundColor(.textSecondary)
-                            .lineLimit(1)
-                            .truncationMode(.middle)
-                            .frame(maxWidth: .infinity, alignment: .leading)
+                        HStack(spacing: Spacing.sm) {
+                            Text(forestPath)
+                                .font(.mono)
+                                .foregroundColor(.textSecondary)
+                                .lineLimit(1)
+                                .truncationMode(.middle)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .padding(.horizontal, Spacing.md)
+                                .padding(.vertical, 10)
+                                .background(Color.bg)
+                                .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 8, style: .continuous)
+                                        .strokeBorder(Color.border, lineWidth: 1)
+                                )
+
+                            Button("Browse...") {
+                                showingFolderPicker = true
+                            }
+                            .buttonStyle(GhostButtonStyle())
+                        }
+                    }
+
+                    // Default Editor
+                    VStack(alignment: .leading, spacing: Spacing.sm) {
+                        SectionHeader(title: "Default Editor")
+
+                        Text("Opens worktrees with ⌘E")
+                            .font(.caption)
+                            .foregroundColor(.textTertiary)
+
+                        Menu {
+                            ForEach(Editor.allCases) { editor in
+                                Button {
+                                    selectedEditor = editor
+                                } label: {
+                                    HStack {
+                                        Text(editor.displayName)
+                                        if selectedEditor == editor {
+                                            Image(systemName: "checkmark")
+                                        }
+                                    }
+                                }
+                            }
+                        } label: {
+                            HStack {
+                                Image(systemName: selectedEditor.icon)
+                                    .font(.system(size: 12))
+                                    .foregroundColor(.accent)
+                                    .frame(width: 20)
+
+                                Text(selectedEditor.displayName)
+                                    .font(.bodyRegular)
+                                    .foregroundColor(.textPrimary)
+
+                                Spacer()
+
+                                Image(systemName: "chevron.down")
+                                    .font(.system(size: 10, weight: .semibold))
+                                    .foregroundColor(.textTertiary)
+                            }
                             .padding(.horizontal, Spacing.md)
                             .padding(.vertical, 10)
                             .background(Color.bg)
@@ -44,15 +102,24 @@ struct SettingsView: View {
                                 RoundedRectangle(cornerRadius: 8, style: .continuous)
                                     .strokeBorder(Color.border, lineWidth: 1)
                             )
-
-                        Button("Browse...") {
-                            showingFolderPicker = true
                         }
-                        .buttonStyle(GhostButtonStyle())
+                        .menuStyle(.borderlessButton)
+                    }
+
+                    // Branch Prefix
+                    VStack(alignment: .leading, spacing: Spacing.sm) {
+                        SectionHeader(title: "Branch Prefix")
+
+                        Text("Auto-added when creating new branches")
+                            .font(.caption)
+                            .foregroundColor(.textTertiary)
+
+                        MinimalTextField(placeholder: "feat/", text: $branchPrefix, isMonospace: true)
                     }
                 }
+                .padding(.horizontal, Spacing.xl)
+                .padding(.vertical, Spacing.sm)
             }
-            .padding(.horizontal, Spacing.xl)
 
             Spacer()
 
@@ -76,7 +143,7 @@ struct SettingsView: View {
             }
             .padding(Spacing.lg)
         }
-        .frame(width: 450, height: 280)
+        .frame(width: 450, height: 420)
         .background(Color.bgElevated)
         .fileImporter(
             isPresented: $showingFolderPicker,
@@ -91,6 +158,8 @@ struct SettingsView: View {
 
     private func saveSettings() {
         SettingsService.shared.forestDirectory = URL(fileURLWithPath: forestPath)
+        SettingsService.shared.defaultEditor = selectedEditor
+        SettingsService.shared.branchPrefix = branchPrefix
         dismiss()
     }
 }

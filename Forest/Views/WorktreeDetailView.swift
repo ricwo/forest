@@ -228,6 +228,14 @@ struct WorktreeDetailView: View {
 
             HStack(spacing: Spacing.sm) {
                 ActionButton(
+                    icon: SettingsService.shared.defaultEditor.icon,
+                    label: SettingsService.shared.defaultEditor.displayName,
+                    shortcut: "⌘E",
+                    action: openInEditor
+                )
+                .keyboardShortcut("e", modifiers: .command)
+
+                ActionButton(
                     icon: "folder",
                     label: "Finder",
                     shortcut: "⌘O",
@@ -244,15 +252,6 @@ struct WorktreeDetailView: View {
                     action: openInTerminal
                 )
                 .keyboardShortcut("t", modifiers: .command)
-
-                ActionButton(
-                    icon: "",
-                    label: "PyCharm",
-                    shortcut: "⌘P",
-                    action: openInPyCharm,
-                    customImage: "PyCharmLogo"
-                )
-                .keyboardShortcut("p", modifiers: .command)
 
                 ActionButton(
                     icon: "",
@@ -377,6 +376,19 @@ struct WorktreeDetailView: View {
             try process.run()
         } catch {
             errorMessage = "PyCharm not found. Install from jetbrains.com or use Toolbox."
+        }
+    }
+
+    private func openInEditor() {
+        let editor = SettingsService.shared.defaultEditor
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: "/usr/bin/open")
+        process.arguments = ["-b", editor.bundleId, worktree.path]
+
+        do {
+            try process.run()
+        } catch {
+            errorMessage = "\(editor.displayName) not found."
         }
     }
 

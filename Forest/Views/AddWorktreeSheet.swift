@@ -58,7 +58,8 @@ struct AddWorktreeSheet: View {
                                 worktreeName = sanitized
                             }
                             if !hasManuallyEditedBranch && createNewBranch {
-                                branchName = sanitized.isEmpty ? "" : "feat/\(sanitized)"
+                                let prefix = SettingsService.shared.branchPrefix
+                                branchName = sanitized.isEmpty ? "" : "\(prefix)\(sanitized)"
                             }
                         }
 
@@ -81,7 +82,8 @@ struct AddWorktreeSheet: View {
                         ) {
                             createNewBranch = true
                             if !hasManuallyEditedBranch && !worktreeName.isEmpty {
-                                branchName = "feat/\(worktreeName)"
+                                let prefix = SettingsService.shared.branchPrefix
+                                branchName = "\(prefix)\(worktreeName)"
                             }
                         }
 
@@ -100,9 +102,10 @@ struct AddWorktreeSheet: View {
                     )
 
                     if createNewBranch {
-                        MinimalTextField(placeholder: "feat/my-feature", text: $branchName, isMonospace: true)
+                        MinimalTextField(placeholder: "\(SettingsService.shared.branchPrefix)my-feature", text: $branchName, isMonospace: true)
                             .onChange(of: branchName) { _, newValue in
-                                let expectedAuto = "feat/\(worktreeName)"
+                                let prefix = SettingsService.shared.branchPrefix
+                                let expectedAuto = "\(prefix)\(worktreeName)"
                                 if newValue != expectedAuto && !newValue.isEmpty {
                                     hasManuallyEditedBranch = true
                                 }
