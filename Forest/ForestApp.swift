@@ -1,4 +1,5 @@
 import SwiftUI
+import AppKit
 
 @main
 struct ForestApp: App {
@@ -12,13 +13,12 @@ struct ForestApp: App {
             ContentView()
                 .environment(appState)
                 .environment(updateService)
-                .preferredColorScheme(settingsService.appearanceMode.colorScheme)
                 .onAppear {
                     updateService.startPeriodicChecks()
+                    applyAppearance(settingsService.appearanceMode)
                 }
                 .sheet(isPresented: $showSettings) {
                     SettingsView()
-                        .preferredColorScheme(settingsService.appearanceMode.colorScheme)
                 }
         }
         .defaultSize(width: 900, height: 600)
@@ -38,5 +38,25 @@ struct ForestApp: App {
                 .keyboardShortcut(",", modifiers: [.command])
             }
         }
+    }
+
+    private func applyAppearance(_ mode: AppearanceMode) {
+        let appearance: NSAppearance?
+        switch mode {
+        case .system:
+            appearance = nil
+        case .light:
+            appearance = NSAppearance(named: .aqua)
+        case .dark:
+            appearance = NSAppearance(named: .darkAqua)
+        }
+
+        NSApp.appearance = appearance
+        for window in NSApp.windows {
+            window.appearance = appearance
+            window.invalidateShadow()
+            window.displayIfNeeded()
+        }
+        settingsService.appearanceRefreshTrigger += 1
     }
 }

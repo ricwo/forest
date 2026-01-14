@@ -1,14 +1,19 @@
 import SwiftUI
+import AppKit
 
 struct SettingsView: View {
     @Environment(\.dismiss) private var dismiss
+    @State private var settingsService = SettingsService.shared
     @State private var forestPath: String = SettingsService.shared.forestDirectory.path
     @State private var showingFolderPicker = false
     @State private var selectedEditor: Editor = SettingsService.shared.defaultEditor
     @State private var branchPrefix: String = SettingsService.shared.branchPrefix
     @State private var appearanceMode: AppearanceMode = SettingsService.shared.appearanceMode
+    private let originalAppearanceMode: AppearanceMode = SettingsService.shared.appearanceMode
 
     var body: some View {
+        let _ = settingsService.appearanceRefreshTrigger  // Trigger re-render on appearance change
+
         VStack(spacing: 0) {
             // Header
             VStack(spacing: Spacing.sm) {
@@ -136,6 +141,7 @@ struct SettingsView: View {
                             ForEach(AppearanceMode.allCases) { mode in
                                 Button {
                                     appearanceMode = mode
+                                    applyAppearance(mode)
                                 } label: {
                                     VStack(spacing: Spacing.xs) {
                                         Image(systemName: mode.icon)
@@ -172,6 +178,8 @@ struct SettingsView: View {
 
             HStack {
                 Button("Cancel") {
+                    settingsService.activeAppearance = nil
+                    applyAppearance(originalAppearanceMode)
                     dismiss()
                 }
                 .buttonStyle(GhostButtonStyle())
@@ -205,7 +213,31 @@ struct SettingsView: View {
         SettingsService.shared.defaultEditor = selectedEditor
         SettingsService.shared.branchPrefix = branchPrefix
         SettingsService.shared.appearanceMode = appearanceMode
+        settingsService.activeAppearance = nil  // Clear preview, saved value now matches
         dismiss()
+    }
+
+    private func applyAppearance(_ mode: AppearanceMode) {
+        // Set active appearance for preview
+        settingsService.activeAppearance = mode
+
+        let appearance: NSAppearance?
+        switch mode {
+        case .system:
+            appearance = nil
+        case .light:
+            appearance = NSAppearance(named: .aqua)
+        case .dark:
+            appearance = NSAppearance(named: .darkAqua)
+        }
+
+        NSApp.appearance = appearance
+        for window in NSApp.windows {
+            window.appearance = appearance
+            window.invalidateShadow()
+            window.displayIfNeeded()
+        }
+        settingsService.appearanceRefreshTrigger += 1
     }
 }
 

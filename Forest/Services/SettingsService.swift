@@ -130,5 +130,24 @@ final class SettingsService {
         }
     }
 
+    /// Incremented when appearance changes to trigger SwiftUI view updates
+    var appearanceRefreshTrigger: Int = 0
+
+    /// Currently active appearance (may differ from saved during preview)
+    var activeAppearance: AppearanceMode?
+
+    /// Returns whether dark mode should be active based on current settings
+    var isDarkModeActive: Bool {
+        let mode = activeAppearance ?? appearanceMode
+        switch mode {
+        case .dark:
+            return true
+        case .light:
+            return false
+        case .system:
+            return NSApp.effectiveAppearance.bestMatch(from: [.aqua, .darkAqua]) == .darkAqua
+        }
+    }
+
     private init() {}
 }

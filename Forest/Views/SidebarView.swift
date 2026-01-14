@@ -7,6 +7,7 @@ extension UUID: @retroactive Identifiable {
 struct SidebarView: View {
     @Environment(AppState.self) private var appState
     @Environment(UpdateService.self) private var updateService
+    @State private var settingsService = SettingsService.shared
     @State private var showingAddRepo = false
     @State private var worktreeSheetRepoId: UUID?
     @State private var repoToRemove: Repository?
@@ -18,6 +19,8 @@ struct SidebarView: View {
     @State private var showSettings = false
 
     var body: some View {
+        let _ = settingsService.appearanceRefreshTrigger  // Trigger re-render on appearance change
+
         VStack(spacing: 0) {
             // Header
             HStack {

@@ -1,40 +1,59 @@
 import SwiftUI
+import AppKit
+
+// MARK: - Adaptive Color Helper
+
+extension Color {
+    private static var isDarkMode: Bool {
+        SettingsService.shared.isDarkModeActive
+    }
+
+    /// Creates an adaptive color that switches between light and dark variants
+    static func adaptive(light: String, dark: String) -> Color {
+        isDarkMode ? Color(hex: dark) : Color(hex: light)
+    }
+
+    /// Creates an adaptive color from two Color values
+    static func adaptive(light: Color, dark: Color) -> Color {
+        isDarkMode ? dark : light
+    }
+}
 
 // MARK: - Colors (Organic Minimalism with Dark Mode)
 
 extension Color {
     // Backgrounds - warm cream tints (light) / dark charcoal (dark)
-    static let bg = Color(light: Color(hex: "FAF9F7"), dark: Color(hex: "1C1C1E"))
-    static let bgElevated = Color(light: Color(hex: "FFFFFF"), dark: Color(hex: "2C2C2E"))
-    static let bgHover = Color(light: Color(hex: "F5F4F1"), dark: Color(hex: "3A3A3C"))
-    static let bgSelected = Color(light: Color(hex: "EFEEEB"), dark: Color(hex: "48484A"))
-    static let bgSubtle = Color(light: Color(hex: "F8F7F5"), dark: Color(hex: "252527"))
+    static var bg: Color { .adaptive(light: "FAF9F7", dark: "1C1C1E") }
+    static var bgElevated: Color { .adaptive(light: "FFFFFF", dark: "2C2C2E") }
+    static var bgHover: Color { .adaptive(light: "F5F4F1", dark: "3A3A3C") }
+    static var bgSelected: Color { .adaptive(light: "EFEEEB", dark: "48484A") }
+    static var bgSubtle: Color { .adaptive(light: "F8F7F5", dark: "252527") }
 
     // Borders - warm with subtle green tint
-    static let border = Color(light: Color(hex: "E8E6E1"), dark: Color(hex: "3D3D3F"))
-    static let borderSubtle = Color(light: Color(hex: "F0EEE9"), dark: Color(hex: "323234"))
-    static let borderFocus = Color(light: Color(hex: "2D6A4F").opacity(0.3), dark: Color(hex: "52B788").opacity(0.4))
+    static var border: Color { .adaptive(light: "E8E6E1", dark: "3D3D3F") }
+    static var borderSubtle: Color { .adaptive(light: "F0EEE9", dark: "323234") }
+    static var borderFocus: Color { .adaptive(light: Color(hex: "2D6A4F").opacity(0.3), dark: Color(hex: "52B788").opacity(0.4)) }
 
     // Text hierarchy - warm charcoal (light) / light tones (dark)
-    static let textPrimary = Color(light: Color(hex: "1B1B18"), dark: Color(hex: "F5F5F5"))
-    static let textSecondary = Color(light: Color(hex: "5C5C52"), dark: Color(hex: "A8A8A8"))
-    static let textTertiary = Color(light: Color(hex: "8A8A7A"), dark: Color(hex: "7A7A7A"))
-    static let textMuted = Color(light: Color(hex: "C4C4B8"), dark: Color(hex: "5A5A5A"))
+    static var textPrimary: Color { .adaptive(light: "1B1B18", dark: "F5F5F5") }
+    static var textSecondary: Color { .adaptive(light: "5C5C52", dark: "A8A8A8") }
+    static var textTertiary: Color { .adaptive(light: "8A8A7A", dark: "7A7A7A") }
+    static var textMuted: Color { .adaptive(light: "C4C4B8", dark: "5A5A5A") }
 
     // Accent - forest green (warmer, more organic)
-    static let accent = Color(light: Color(hex: "2D6A4F"), dark: Color(hex: "52B788"))
-    static let accentLight = Color(light: Color(hex: "2D6A4F").opacity(0.08), dark: Color(hex: "52B788").opacity(0.15))
-    static let accentSoft = Color(light: Color(hex: "D8F3DC"), dark: Color(hex: "1B4332"))
+    static var accent: Color { .adaptive(light: "2D6A4F", dark: "52B788") }
+    static var accentLight: Color { .adaptive(light: Color(hex: "2D6A4F").opacity(0.08), dark: Color(hex: "52B788").opacity(0.15)) }
+    static var accentSoft: Color { .adaptive(light: "D8F3DC", dark: "1B4332") }
 
     // Secondary accent - warm amber for highlights
-    static let accentWarm = Color(light: Color(hex: "B68D40"), dark: Color(hex: "D4A855"))
-    static let accentWarmLight = Color(light: Color(hex: "B68D40").opacity(0.1), dark: Color(hex: "D4A855").opacity(0.15))
+    static var accentWarm: Color { .adaptive(light: "B68D40", dark: "D4A855") }
+    static var accentWarmLight: Color { .adaptive(light: Color(hex: "B68D40").opacity(0.1), dark: Color(hex: "D4A855").opacity(0.15)) }
 
     // Semantic
-    static let destructive = Color(light: Color(hex: "C1292E"), dark: Color(hex: "FF6B6B"))
-    static let destructiveLight = Color(light: Color(hex: "C1292E").opacity(0.08), dark: Color(hex: "FF6B6B").opacity(0.15))
-    static let warning = Color(light: Color(hex: "CC7722"), dark: Color(hex: "FFB347"))
-    static let success = Color(light: Color(hex: "40916C"), dark: Color(hex: "52B788"))
+    static var destructive: Color { .adaptive(light: "C1292E", dark: "FF6B6B") }
+    static var destructiveLight: Color { .adaptive(light: Color(hex: "C1292E").opacity(0.08), dark: Color(hex: "FF6B6B").opacity(0.15)) }
+    static var warning: Color { .adaptive(light: "CC7722", dark: "FFB347") }
+    static var success: Color { .adaptive(light: "40916C", dark: "52B788") }
 
     init(hex: String) {
         let hex = hex.trimmingCharacters(in: CharacterSet.alphanumerics.inverted)
