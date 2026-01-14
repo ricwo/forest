@@ -6,6 +6,7 @@ struct SettingsView: View {
     @State private var showingFolderPicker = false
     @State private var selectedEditor: Editor = SettingsService.shared.defaultEditor
     @State private var branchPrefix: String = SettingsService.shared.branchPrefix
+    @State private var appearanceMode: AppearanceMode = SettingsService.shared.appearanceMode
 
     var body: some View {
         VStack(spacing: 0) {
@@ -120,6 +121,45 @@ struct SettingsView: View {
 
                         MinimalTextField(placeholder: "feat/", text: $branchPrefix, isMonospace: true)
                     }
+
+                    SubtleDivider()
+
+                    // Appearance
+                    VStack(alignment: .leading, spacing: Spacing.sm) {
+                        SectionHeader(title: "Appearance")
+
+                        Text("Choose your preferred color scheme")
+                            .font(.caption)
+                            .foregroundColor(.textTertiary)
+
+                        HStack(spacing: Spacing.sm) {
+                            ForEach(AppearanceMode.allCases) { mode in
+                                Button {
+                                    appearanceMode = mode
+                                } label: {
+                                    VStack(spacing: Spacing.xs) {
+                                        Image(systemName: mode.icon)
+                                            .font(.system(size: 16, weight: .medium))
+                                            .foregroundColor(appearanceMode == mode ? .accent : .textSecondary)
+                                        Text(mode.displayName)
+                                            .font(.caption)
+                                            .foregroundColor(appearanceMode == mode ? .textPrimary : .textSecondary)
+                                    }
+                                    .frame(maxWidth: .infinity)
+                                    .padding(.vertical, Spacing.md)
+                                    .background(
+                                        RoundedRectangle(cornerRadius: 8, style: .continuous)
+                                            .fill(appearanceMode == mode ? Color.accentLight : Color.bg)
+                                    )
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 8, style: .continuous)
+                                            .strokeBorder(appearanceMode == mode ? Color.accent.opacity(0.3) : Color.border, lineWidth: 1)
+                                    )
+                                }
+                                .buttonStyle(.plain)
+                            }
+                        }
+                    }
                 }
                 .padding(.horizontal, Spacing.xl)
                 .padding(.vertical, Spacing.sm)
@@ -147,7 +187,7 @@ struct SettingsView: View {
             }
             .padding(Spacing.lg)
         }
-        .frame(width: 450, height: 420)
+        .frame(width: 450, height: 520)
         .background(Color.bgElevated)
         .fileImporter(
             isPresented: $showingFolderPicker,
@@ -164,6 +204,7 @@ struct SettingsView: View {
         SettingsService.shared.forestDirectory = URL(fileURLWithPath: forestPath)
         SettingsService.shared.defaultEditor = selectedEditor
         SettingsService.shared.branchPrefix = branchPrefix
+        SettingsService.shared.appearanceMode = appearanceMode
         dismiss()
     }
 }

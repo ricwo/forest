@@ -4,6 +4,7 @@ import SwiftUI
 struct ForestApp: App {
     @State private var appState = AppState()
     @State private var updateService = UpdateService.shared
+    @State private var settingsService = SettingsService.shared
     @State private var showSettings = false
 
     var body: some Scene {
@@ -11,11 +12,13 @@ struct ForestApp: App {
             ContentView()
                 .environment(appState)
                 .environment(updateService)
+                .preferredColorScheme(settingsService.appearanceMode.colorScheme)
                 .onAppear {
                     updateService.startPeriodicChecks()
                 }
                 .sheet(isPresented: $showSettings) {
                     SettingsView()
+                        .preferredColorScheme(settingsService.appearanceMode.colorScheme)
                 }
         }
         .defaultSize(width: 900, height: 600)

@@ -1,40 +1,40 @@
 import SwiftUI
 
-// MARK: - Colors (Organic Minimalism)
+// MARK: - Colors (Organic Minimalism with Dark Mode)
 
 extension Color {
-    // Backgrounds - warm cream tints
-    static let bg = Color(hex: "FAF9F7")
-    static let bgElevated = Color(hex: "FFFFFF")
-    static let bgHover = Color(hex: "F5F4F1")
-    static let bgSelected = Color(hex: "EFEEEB")
-    static let bgSubtle = Color(hex: "F8F7F5")
+    // Backgrounds - warm cream tints (light) / dark charcoal (dark)
+    static let bg = Color(light: Color(hex: "FAF9F7"), dark: Color(hex: "1C1C1E"))
+    static let bgElevated = Color(light: Color(hex: "FFFFFF"), dark: Color(hex: "2C2C2E"))
+    static let bgHover = Color(light: Color(hex: "F5F4F1"), dark: Color(hex: "3A3A3C"))
+    static let bgSelected = Color(light: Color(hex: "EFEEEB"), dark: Color(hex: "48484A"))
+    static let bgSubtle = Color(light: Color(hex: "F8F7F5"), dark: Color(hex: "252527"))
 
     // Borders - warm with subtle green tint
-    static let border = Color(hex: "E8E6E1")
-    static let borderSubtle = Color(hex: "F0EEE9")
-    static let borderFocus = Color(hex: "2D6A4F").opacity(0.3)
+    static let border = Color(light: Color(hex: "E8E6E1"), dark: Color(hex: "3D3D3F"))
+    static let borderSubtle = Color(light: Color(hex: "F0EEE9"), dark: Color(hex: "323234"))
+    static let borderFocus = Color(light: Color(hex: "2D6A4F").opacity(0.3), dark: Color(hex: "52B788").opacity(0.4))
 
-    // Text hierarchy - warm charcoal
-    static let textPrimary = Color(hex: "1B1B18")
-    static let textSecondary = Color(hex: "5C5C52")
-    static let textTertiary = Color(hex: "8A8A7A")
-    static let textMuted = Color(hex: "C4C4B8")
+    // Text hierarchy - warm charcoal (light) / light tones (dark)
+    static let textPrimary = Color(light: Color(hex: "1B1B18"), dark: Color(hex: "F5F5F5"))
+    static let textSecondary = Color(light: Color(hex: "5C5C52"), dark: Color(hex: "A8A8A8"))
+    static let textTertiary = Color(light: Color(hex: "8A8A7A"), dark: Color(hex: "7A7A7A"))
+    static let textMuted = Color(light: Color(hex: "C4C4B8"), dark: Color(hex: "5A5A5A"))
 
     // Accent - forest green (warmer, more organic)
-    static let accent = Color(hex: "2D6A4F")
-    static let accentLight = Color(hex: "2D6A4F").opacity(0.08)
-    static let accentSoft = Color(hex: "D8F3DC")
+    static let accent = Color(light: Color(hex: "2D6A4F"), dark: Color(hex: "52B788"))
+    static let accentLight = Color(light: Color(hex: "2D6A4F").opacity(0.08), dark: Color(hex: "52B788").opacity(0.15))
+    static let accentSoft = Color(light: Color(hex: "D8F3DC"), dark: Color(hex: "1B4332"))
 
     // Secondary accent - warm amber for highlights
-    static let accentWarm = Color(hex: "B68D40")
-    static let accentWarmLight = Color(hex: "B68D40").opacity(0.1)
+    static let accentWarm = Color(light: Color(hex: "B68D40"), dark: Color(hex: "D4A855"))
+    static let accentWarmLight = Color(light: Color(hex: "B68D40").opacity(0.1), dark: Color(hex: "D4A855").opacity(0.15))
 
     // Semantic
-    static let destructive = Color(hex: "C1292E")
-    static let destructiveLight = Color(hex: "C1292E").opacity(0.08)
-    static let warning = Color(hex: "CC7722")
-    static let success = Color(hex: "40916C")
+    static let destructive = Color(light: Color(hex: "C1292E"), dark: Color(hex: "FF6B6B"))
+    static let destructiveLight = Color(light: Color(hex: "C1292E").opacity(0.08), dark: Color(hex: "FF6B6B").opacity(0.15))
+    static let warning = Color(light: Color(hex: "CC7722"), dark: Color(hex: "FFB347"))
+    static let success = Color(light: Color(hex: "40916C"), dark: Color(hex: "52B788"))
 
     init(hex: String) {
         let hex = hex.trimmingCharacters(in: CharacterSet.alphanumerics.inverted)
