@@ -10,5 +10,6 @@ struct ForestApp: App {
                 .environment(appState)
         }
         .defaultSize(width: 900, height: 600)
+        .windowResizability(.contentSize)
     }
 }

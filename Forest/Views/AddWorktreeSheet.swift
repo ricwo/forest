@@ -19,93 +19,152 @@ struct AddWorktreeSheet: View {
         appState.repositories.first { $0.id == repositoryId }
     }
 
-    private var sanitizedWorktreeName: String {
-        worktreeName.filter { $0.isLetter || $0.isNumber || $0 == "-" || $0 == "_" }
-    }
-
-    private var worktreeNameError: String? {
-        if worktreeName.isEmpty { return nil }
-        if worktreeName != sanitizedWorktreeName {
-            return "Only letters, numbers, hyphens, and underscores allowed"
-        }
-        return nil
+    private var isValid: Bool {
+        !worktreeName.isEmpty &&
+        (createNewBranch ? !branchName.isEmpty : !selectedExistingBranch.isEmpty)
     }
 
     var body: some View {
         VStack(spacing: 0) {
-            Form {
-                Section {
-                    TextField("Worktree Name", text: $worktreeName)
-                        .textFieldStyle(.roundedBorder)
+            // Header
+            VStack(spacing: Spacing.sm) {
+                Image(systemName: "plus.square.on.square")
+                    .font(.system(size: 36, weight: .light))
+                    .foregroundColor(.accent)
+
+                Text("New Worktree")
+                    .font(.displayMedium)
+                    .foregroundColor(.textPrimary)
+
+                if let repo = repository {
+                    Text("in \(repo.name)")
+                        .font(.bodyRegular)
+                        .foregroundColor(.textSecondary)
+                }
+            }
+            .padding(.top, Spacing.xl)
+            .padding(.bottom, Spacing.lg)
+
+            // Content
+            VStack(spacing: Spacing.lg) {
+                // Worktree name
+                VStack(alignment: .leading, spacing: Spacing.sm) {
+                    SectionHeader(title: "Name")
+
+                    MinimalTextField(placeholder: "my-feature", text: $worktreeName)
                         .onChange(of: worktreeName) { _, newValue in
-                            // Auto-sanitize input
                             let sanitized = newValue.filter { $0.isLetter || $0.isNumber || $0 == "-" || $0 == "_" }
                             if sanitized != newValue {
                                 worktreeName = sanitized
                             }
-                            // Update branch name if not manually edited
                             if !hasManuallyEditedBranch && createNewBranch {
                                 branchName = sanitized.isEmpty ? "" : "feat/\(sanitized)"
                             }
                         }
-                    if let error = worktreeNameError {
-                        Text(error)
+
+                    if let repo = repository {
+                        Text("~/forest/\(repo.name)/\(worktreeName.isEmpty ? "..." : worktreeName)")
                             .font(.caption)
-                            .foregroundStyle(.red)
+                            .foregroundColor(.textTertiary)
                     }
-                } header: {
-                    Text("Folder name in ~/forest/\(repository?.name ?? "repo")/")
                 }
 
-                Section {
-                    Picker("Branch Type", selection: $createNewBranch) {
-                        Text("Create new branch").tag(true)
-                        Text("Use existing branch").tag(false)
-                    }
-                    .pickerStyle(.segmented)
-                    .onChange(of: createNewBranch) { _, newValue in
-                        if newValue && !hasManuallyEditedBranch && !worktreeName.isEmpty {
-                            branchName = "feat/\(worktreeName)"
+                // Branch
+                VStack(alignment: .leading, spacing: Spacing.sm) {
+                    SectionHeader(title: "Branch")
+
+                    // Toggle
+                    HStack(spacing: 0) {
+                        BranchToggleButton(
+                            title: "New branch",
+                            isSelected: createNewBranch
+                        ) {
+                            createNewBranch = true
+                            if !hasManuallyEditedBranch && !worktreeName.isEmpty {
+                                branchName = "feat/\(worktreeName)"
+                            }
+                        }
+
+                        BranchToggleButton(
+                            title: "Existing",
+                            isSelected: !createNewBranch
+                        ) {
+                            createNewBranch = false
                         }
                     }
+                    .background(Color.bg)
+                    .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 8, style: .continuous)
+                            .strokeBorder(Color.border, lineWidth: 1)
+                    )
 
                     if createNewBranch {
-                        TextField("New Branch Name", text: $branchName)
-                            .textFieldStyle(.roundedBorder)
+                        MinimalTextField(placeholder: "feat/my-feature", text: $branchName, isMonospace: true)
                             .onChange(of: branchName) { _, newValue in
-                                // Mark as manually edited if user changes it from the auto-generated value
                                 let expectedAuto = "feat/\(worktreeName)"
                                 if newValue != expectedAuto && !newValue.isEmpty {
                                     hasManuallyEditedBranch = true
                                 }
                             }
                     } else {
-                        Picker("Existing Branch", selection: $selectedExistingBranch) {
-                            Text("Select a branch").tag("")
+                        Menu {
                             ForEach(existingBranches, id: \.self) { branch in
-                                Text(branch).tag(branch)
+                                Button(branch) {
+                                    selectedExistingBranch = branch
+                                }
                             }
+                        } label: {
+                            HStack {
+                                Text(selectedExistingBranch.isEmpty ? "Select branch" : selectedExistingBranch)
+                                    .font(selectedExistingBranch.isEmpty ? .bodyRegular : .mono)
+                                    .foregroundColor(selectedExistingBranch.isEmpty ? .textTertiary : .textSecondary)
+
+                                Spacer()
+
+                                Image(systemName: "chevron.down")
+                                    .font(.system(size: 10, weight: .semibold))
+                                    .foregroundColor(.textTertiary)
+                            }
+                            .padding(.horizontal, Spacing.md)
+                            .padding(.vertical, 10)
+                            .background(Color.bgElevated)
+                            .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 8, style: .continuous)
+                                    .strokeBorder(Color.border, lineWidth: 1)
+                            )
                         }
+                        .menuStyle(.borderlessButton)
                     }
-                } header: {
-                    Text("Branch")
                 }
 
+                // Error
                 if let error = errorMessage {
-                    Section {
+                    HStack(spacing: Spacing.sm) {
+                        Image(systemName: "exclamationmark.triangle.fill")
+                            .font(.system(size: 11))
+                            .foregroundColor(.destructive)
+
                         Text(error)
-                            .foregroundStyle(.red)
+                            .font(.caption)
+                            .foregroundColor(.destructive)
                     }
+                    .frame(maxWidth: .infinity, alignment: .leading)
                 }
             }
-            .formStyle(.grouped)
+            .padding(.horizontal, Spacing.xl)
 
-            Divider()
+            Spacer()
+
+            // Footer
+            SubtleDivider()
 
             HStack {
                 Button("Cancel") {
                     dismiss()
                 }
+                .buttonStyle(GhostButtonStyle())
                 .keyboardShortcut(.cancelAction)
 
                 Spacer()
@@ -113,23 +172,17 @@ struct AddWorktreeSheet: View {
                 Button("Create Worktree") {
                     createWorktree()
                 }
+                .buttonStyle(AccentButtonStyle())
                 .keyboardShortcut(.defaultAction)
-                .buttonStyle(.borderedProminent)
-                .tint(.forest)
                 .disabled(!isValid || isCreating)
             }
-            .padding()
+            .padding(Spacing.lg)
         }
-        .frame(width: 400, height: 340)
+        .frame(width: 400, height: 420)
+        .background(Color.bgElevated)
         .onAppear {
             loadBranches()
         }
-    }
-
-    private var isValid: Bool {
-        !worktreeName.isEmpty &&
-        worktreeNameError == nil &&
-        (createNewBranch ? !branchName.isEmpty : !selectedExistingBranch.isEmpty)
     }
 
     private func loadBranches() {
@@ -156,6 +209,26 @@ struct AddWorktreeSheet: View {
             errorMessage = error.localizedDescription
             isCreating = false
         }
+    }
+}
+
+// MARK: - Branch Toggle Button
+
+struct BranchToggleButton: View {
+    let title: String
+    let isSelected: Bool
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            Text(title)
+                .font(.captionMedium)
+                .foregroundColor(isSelected ? .textPrimary : .textTertiary)
+                .padding(.horizontal, Spacing.md)
+                .padding(.vertical, Spacing.sm)
+                .background(isSelected ? Color.bgHover : Color.clear)
+        }
+        .buttonStyle(.plain)
     }
 }
 

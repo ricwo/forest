@@ -24,3 +24,17 @@ targets:
       ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS: YES
       ARCHS: arm64
       ONLY_ACTIVE_ARCH: NO
+
+  ForestTests:
+    type: bundle.unit-test
+    platform: macOS
+    sources:
+      - ForestTests
+    dependencies:
+      - target: Forest
+    settings:
+      PRODUCT_BUNDLE_IDENTIFIER: com.forest.tests
+      SWIFT_VERSION: "5.9"
+      GENERATE_INFOPLIST_FILE: YES
+      TEST_HOST: "$(BUILT_PRODUCTS_DIR)/Forest.app/Contents/MacOS/Forest"
+      BUNDLE_LOADER: "$(TEST_HOST)"

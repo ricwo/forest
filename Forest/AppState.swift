@@ -10,6 +10,7 @@ class AppState {
 
     private let configURL: URL
     private let forestDirectory: URL
+    private let persistChanges: Bool
 
     var selectedRepository: Repository? {
         repositories.first { $0.id == selectedRepositoryId }
@@ -32,13 +33,16 @@ class AppState {
         }?.id
     }
 
-    init() {
-        let home = FileManager.default.homeDirectoryForCurrentUser
-        self.forestDirectory = home.appendingPathComponent("forest")
-        self.configURL = forestDirectory.appendingPathComponent(".forest-config.json")
+    init(forestDirectory: URL? = nil, persistChanges: Bool = true) {
+        let dir = forestDirectory ?? FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("forest")
+        self.forestDirectory = dir
+        self.configURL = dir.appendingPathComponent(".forest-config.json")
+        self.persistChanges = persistChanges
 
-        ensureForestDirectoryExists()
-        loadConfig()
+        if persistChanges {
+            ensureForestDirectoryExists()
+            loadConfig()
+        }
     }
 
     private func ensureForestDirectoryExists() {
@@ -56,6 +60,7 @@ class AppState {
     }
 
     func saveConfig() {
+        guard persistChanges else { return }
         do {
             let data = try JSONEncoder().encode(repositories)
             try data.write(to: configURL)

@@ -14,147 +14,31 @@ struct WorktreeDetailView: View {
     @State private var showArchiveConfirmation = false
 
     var body: some View {
-        Form {
-            Section {
-                LabeledContent("Name") {
-                    if isEditingName {
-                        HStack {
-                            TextField("Name", text: $editedName)
-                                .textFieldStyle(.roundedBorder)
-                                .frame(width: 200)
-                            Button("Save") {
-                                renameWorktree()
-                            }
-                            .buttonStyle(.borderedProminent)
-                            .tint(.forest)
-                            Button("Cancel") {
-                                isEditingName = false
-                            }
-                        }
-                    } else {
-                        HStack {
-                            Text(worktree.name)
-                            Spacer()
-                            Button("Edit") {
-                                editedName = worktree.name
-                                isEditingName = true
-                            }
-                        }
-                    }
+        VStack(spacing: 0) {
+            // Header
+            header
+                .padding(.horizontal, Spacing.xl)
+                .padding(.top, Spacing.xl)
+                .padding(.bottom, Spacing.lg)
+
+            SubtleDivider()
+
+            // Content
+            ScrollView {
+                VStack(spacing: Spacing.xxl) {
+                    // Info section
+                    infoSection
+
+                    // Quick actions
+                    actionsSection
+
+                    // Manage section
+                    manageSection
                 }
-
-                LabeledContent("Branch") {
-                    if isEditingBranch {
-                        HStack {
-                            TextField("Branch", text: $editedBranch)
-                                .textFieldStyle(.roundedBorder)
-                                .frame(width: 200)
-                            Button("Rename") {
-                                renameBranch()
-                            }
-                            .buttonStyle(.borderedProminent)
-                            .tint(.forest)
-                            Button("Cancel") {
-                                isEditingBranch = false
-                            }
-                        }
-                    } else {
-                        HStack {
-                            Text(worktree.branch)
-                                .foregroundStyle(.secondary)
-                            Spacer()
-                            Button("Rename") {
-                                editedBranch = worktree.branch
-                                isEditingBranch = true
-                            }
-                        }
-                    }
-                }
-
-                LabeledContent("Path") {
-                    Text(worktree.path)
-                        .foregroundStyle(.secondary)
-                        .textSelection(.enabled)
-                }
-            } header: {
-                Label("Worktree Info", systemImage: "leaf.fill")
-            }
-
-            Section {
-                HStack(spacing: 16) {
-                    Button {
-                        NSWorkspace.shared.selectFile(nil, inFileViewerRootedAtPath: worktree.path)
-                    } label: {
-                        Label {
-                            HStack(spacing: 4) {
-                                Text("Finder")
-                                KeyboardShortcutBadge("⌘O")
-                            }
-                        } icon: {
-                            Image(systemName: "folder")
-                        }
-                    }
-                    .keyboardShortcut("o", modifiers: .command)
-
-                    Button {
-                        openInITerm()
-                    } label: {
-                        Label {
-                            HStack(spacing: 4) {
-                                Text("iTerm")
-                                KeyboardShortcutBadge("⌘I")
-                            }
-                        } icon: {
-                            Image(systemName: "terminal")
-                        }
-                    }
-                    .keyboardShortcut("i", modifiers: .command)
-
-                    Button {
-                        openInPyCharm()
-                    } label: {
-                        Label {
-                            HStack(spacing: 4) {
-                                Text("PyCharm")
-                                KeyboardShortcutBadge("⌘P")
-                            }
-                        } icon: {
-                            Image(systemName: "chevron.left.forwardslash.chevron.right")
-                        }
-                    }
-                    .keyboardShortcut("p", modifiers: .command)
-                }
-            } header: {
-                Label("Open In", systemImage: "bolt.fill")
-            }
-
-            Section {
-                HStack(spacing: 12) {
-                    Button {
-                        showArchiveConfirmation = true
-                    } label: {
-                        Label("Archive", systemImage: "archivebox")
-                    }
-
-                    Button(role: .destructive) {
-                        showDeleteConfirmation = true
-                    } label: {
-                        Label("Delete", systemImage: "trash")
-                    }
-                }
-            } header: {
-                Label("Manage", systemImage: "gearshape")
-            }
-
-            if let error = errorMessage {
-                Section {
-                    Text(error)
-                        .foregroundStyle(.red)
-                }
+                .padding(Spacing.xl)
             }
         }
-        .formStyle(.grouped)
-        .navigationTitle(worktree.name)
+        .background(Color.bgElevated)
         .onChange(of: worktree.id) {
             isEditingName = false
             isEditingBranch = false
@@ -166,7 +50,7 @@ struct WorktreeDetailView: View {
                 appState.archiveWorktree(worktree.id, in: repositoryId)
             }
         } message: {
-            Text("This worktree will be hidden from the main list but preserved on disk. You can restore it from the Archived section.")
+            Text("This worktree will be hidden from the main list but preserved on disk.")
         }
         .alert("Delete Worktree?", isPresented: $showDeleteConfirmation) {
             Button("Cancel", role: .cancel) {}
@@ -174,9 +58,206 @@ struct WorktreeDetailView: View {
                 deleteWorktree()
             }
         } message: {
-            Text("This will permanently delete \"\(worktree.name)\" and remove it from git. This cannot be undone.")
+            Text("This will permanently delete \"\(worktree.name)\" and remove it from git.")
         }
     }
+
+    // MARK: - Header
+
+    private var header: some View {
+        HStack(alignment: .top) {
+            VStack(alignment: .leading, spacing: Spacing.sm) {
+                if isEditingName {
+                    HStack(spacing: Spacing.sm) {
+                        MinimalTextField(placeholder: "Name", text: $editedName)
+                            .frame(width: 200)
+
+                        Button("Save") { renameWorktree() }
+                            .buttonStyle(AccentButtonStyle())
+
+                        Button("Cancel") { isEditingName = false }
+                            .buttonStyle(GhostButtonStyle())
+                    }
+                } else {
+                    HStack(spacing: Spacing.sm) {
+                        Text(worktree.name)
+                            .font(.displayMedium)
+                            .foregroundColor(.textPrimary)
+
+                        Button {
+                            editedName = worktree.name
+                            isEditingName = true
+                        } label: {
+                            Image(systemName: "pencil")
+                                .font(.system(size: 12))
+                                .foregroundColor(.textTertiary)
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
+
+                if isEditingBranch {
+                    HStack(spacing: Spacing.sm) {
+                        MinimalTextField(placeholder: "Branch", text: $editedBranch, isMonospace: true)
+                            .frame(width: 200)
+
+                        Button("Save") { renameBranch() }
+                            .buttonStyle(AccentButtonStyle())
+
+                        Button("Cancel") { isEditingBranch = false }
+                            .buttonStyle(GhostButtonStyle())
+                    }
+                } else {
+                    HStack(spacing: Spacing.sm) {
+                        Image(systemName: "arrow.branch")
+                            .font(.system(size: 11))
+                            .foregroundColor(.accent)
+
+                        Text(worktree.branch)
+                            .font(.mono)
+                            .foregroundColor(.textSecondary)
+
+                        Button {
+                            editedBranch = worktree.branch
+                            isEditingBranch = true
+                        } label: {
+                            Image(systemName: "pencil")
+                                .font(.system(size: 10))
+                                .foregroundColor(.textTertiary)
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
+            }
+
+            Spacer()
+        }
+    }
+
+    // MARK: - Info Section
+
+    private var infoSection: some View {
+        VStack(alignment: .leading, spacing: Spacing.md) {
+            SectionHeader(title: "Location")
+
+            HStack(spacing: Spacing.sm) {
+                Image(systemName: "folder")
+                    .font(.system(size: 12))
+                    .foregroundColor(.textTertiary)
+
+                Text(worktree.path)
+                    .font(.mono)
+                    .foregroundColor(.textSecondary)
+                    .lineLimit(1)
+                    .truncationMode(.middle)
+                    .textSelection(.enabled)
+
+                Spacer()
+
+                Button {
+                    NSPasteboard.general.clearContents()
+                    NSPasteboard.general.setString(worktree.path, forType: .string)
+                } label: {
+                    Image(systemName: "doc.on.doc")
+                        .font(.system(size: 11))
+                        .foregroundColor(.textTertiary)
+                }
+                .buttonStyle(.plain)
+                .help("Copy path")
+            }
+            .padding(Spacing.md)
+            .background(Color.bg)
+            .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+            .overlay(
+                RoundedRectangle(cornerRadius: 8, style: .continuous)
+                    .strokeBorder(Color.border, lineWidth: 1)
+            )
+
+            if let error = errorMessage {
+                HStack(spacing: Spacing.sm) {
+                    Image(systemName: "exclamationmark.triangle.fill")
+                        .font(.system(size: 11))
+                        .foregroundColor(.destructive)
+
+                    Text(error)
+                        .font(.caption)
+                        .foregroundColor(.destructive)
+                }
+                .padding(.top, Spacing.xs)
+            }
+        }
+    }
+
+    // MARK: - Actions Section
+
+    private var actionsSection: some View {
+        VStack(alignment: .leading, spacing: Spacing.md) {
+            SectionHeader(title: "Open in")
+
+            HStack(spacing: Spacing.sm) {
+                ActionButton(
+                    icon: "folder",
+                    label: "Finder",
+                    shortcut: "⌘O"
+                ) {
+                    NSWorkspace.shared.selectFile(nil, inFileViewerRootedAtPath: worktree.path)
+                }
+                .keyboardShortcut("o", modifiers: .command)
+
+                ActionButton(
+                    icon: "terminal",
+                    label: "Terminal",
+                    shortcut: "⌘T"
+                ) {
+                    openInTerminal()
+                }
+                .keyboardShortcut("t", modifiers: .command)
+
+                ActionButton(
+                    icon: "chevron.left.forwardslash.chevron.right",
+                    label: "PyCharm",
+                    shortcut: "⌘P"
+                ) {
+                    openInPyCharm()
+                }
+                .keyboardShortcut("p", modifiers: .command)
+            }
+        }
+    }
+
+    // MARK: - Manage Section
+
+    private var manageSection: some View {
+        VStack(alignment: .leading, spacing: Spacing.md) {
+            SectionHeader(title: "Manage")
+
+            HStack(spacing: Spacing.sm) {
+                Button {
+                    showArchiveConfirmation = true
+                } label: {
+                    HStack(spacing: Spacing.sm) {
+                        Image(systemName: "archivebox")
+                            .font(.system(size: 12))
+                        Text("Archive")
+                    }
+                }
+                .buttonStyle(SubtleButtonStyle())
+
+                Button {
+                    showDeleteConfirmation = true
+                } label: {
+                    HStack(spacing: Spacing.sm) {
+                        Image(systemName: "trash")
+                            .font(.system(size: 12))
+                        Text("Delete")
+                    }
+                }
+                .buttonStyle(DestructiveButtonStyle())
+            }
+        }
+    }
+
+    // MARK: - Actions
 
     private func renameWorktree() {
         do {
@@ -206,29 +287,14 @@ struct WorktreeDetailView: View {
         }
     }
 
-    private func openInITerm() {
-        let process = Process()
-        process.executableURL = URL(fileURLWithPath: "/usr/bin/open")
-        process.arguments = ["-a", "iTerm", worktree.path]
+    private func openInTerminal() {
+        // Try iTerm first, then fall back to Terminal
+        let apps = ["iTerm", "Terminal"]
 
-        do {
-            try process.run()
-        } catch {
-            errorMessage = "Failed to open iTerm: \(error.localizedDescription)"
-        }
-    }
-
-    private func openInPyCharm() {
-        let possibleApps = [
-            "PyCharm",
-            "PyCharm CE",
-            "PyCharm Professional"
-        ]
-
-        for appName in possibleApps {
+        for app in apps {
             let process = Process()
             process.executableURL = URL(fileURLWithPath: "/usr/bin/open")
-            process.arguments = ["-a", appName, worktree.path]
+            process.arguments = ["-a", app, worktree.path]
 
             do {
                 try process.run()
@@ -238,7 +304,11 @@ struct WorktreeDetailView: View {
             }
         }
 
-        // Fallback to command line tools
+        errorMessage = "Could not open terminal"
+    }
+
+    private func openInPyCharm() {
+        // Try charm (JetBrains Toolbox) or pycharm CLI
         let process = Process()
         process.executableURL = URL(fileURLWithPath: "/bin/zsh")
         process.arguments = ["-l", "-c", "charm '\(worktree.path)' || pycharm '\(worktree.path)'"]
@@ -251,21 +321,40 @@ struct WorktreeDetailView: View {
     }
 }
 
-struct KeyboardShortcutBadge: View {
-    let shortcut: String
+// MARK: - Action Button
 
-    init(_ shortcut: String) {
-        self.shortcut = shortcut
-    }
+struct ActionButton: View {
+    let icon: String
+    let label: String
+    let shortcut: String
+    let action: () -> Void
+
+    @State private var isHovering = false
 
     var body: some View {
-        Text(shortcut)
-            .font(.system(size: 11, weight: .medium, design: .rounded))
-            .padding(.horizontal, 5)
-            .padding(.vertical, 2)
-            .background(.secondary.opacity(0.15))
-            .cornerRadius(4)
-            .foregroundStyle(.secondary)
+        Button(action: action) {
+            VStack(spacing: Spacing.sm) {
+                Image(systemName: icon)
+                    .font(.system(size: 20, weight: .light))
+                    .foregroundColor(isHovering ? .accent : .textSecondary)
+
+                Text(label)
+                    .font(.captionMedium)
+                    .foregroundColor(.textSecondary)
+
+                ShortcutBadge(shortcut)
+            }
+            .frame(width: 80, height: 80)
+            .background(isHovering ? Color.bgHover : Color.bg)
+            .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+            .overlay(
+                RoundedRectangle(cornerRadius: 10, style: .continuous)
+                    .strokeBorder(isHovering ? Color.accent.opacity(0.3) : Color.border, lineWidth: 1)
+            )
+        }
+        .buttonStyle(.plain)
+        .onHover { isHovering = $0 }
+        .animation(.easeOut(duration: 0.15), value: isHovering)
     }
 }
 
@@ -275,4 +364,5 @@ struct KeyboardShortcutBadge: View {
         repositoryId: UUID()
     )
     .environment(AppState())
+    .frame(width: 500, height: 600)
 }

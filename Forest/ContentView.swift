@@ -4,9 +4,14 @@ struct ContentView: View {
     @Environment(AppState.self) private var appState
 
     var body: some View {
-        NavigationSplitView {
+        HStack(spacing: 0) {
             SidebarView()
-        } detail: {
+                .frame(width: 240)
+
+            Rectangle()
+                .fill(Color.border)
+                .frame(width: 1)
+
             if let worktree = appState.selectedWorktree,
                let repoId = appState.selectedWorktreeRepoId {
                 WorktreeDetailView(worktree: worktree, repositoryId: repoId)
@@ -14,26 +19,29 @@ struct ContentView: View {
                 EmptyStateView()
             }
         }
-        .navigationTitle("Forest")
+        .background(Color.bg)
     }
 }
 
 struct EmptyStateView: View {
     var body: some View {
-        VStack(spacing: 16) {
-            Image(systemName: "tree.fill")
-                .font(.system(size: 60))
-                .foregroundStyle(.forest.opacity(0.5))
+        VStack(spacing: Spacing.lg) {
+            Image(systemName: "arrow.left.circle")
+                .font(.system(size: 44, weight: .ultraLight))
+                .foregroundColor(.textMuted)
 
-            Text("Welcome to Forest")
-                .font(.title2)
-                .fontWeight(.medium)
+            VStack(spacing: Spacing.xs) {
+                Text("Select a worktree")
+                    .font(.bodyMedium)
+                    .foregroundColor(.textSecondary)
 
-            Text("Add a repository to get started,\nthen create worktrees to work on multiple branches.")
-                .multilineTextAlignment(.center)
-                .foregroundStyle(.secondary)
+                Text("Choose a worktree from the sidebar to view details")
+                    .font(.caption)
+                    .foregroundColor(.textTertiary)
+            }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Color.bgElevated)
     }
 }
 

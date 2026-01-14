@@ -1,113 +1,68 @@
 import SwiftUI
 
+extension UUID: @retroactive Identifiable {
+    public var id: UUID { self }
+}
+
 struct SidebarView: View {
     @Environment(AppState.self) private var appState
     @State private var showingAddRepo = false
-    @State private var showingAddWorktree = false
+    @State private var worktreeSheetRepoId: UUID?
     @State private var repoToRemove: Repository?
     @State private var worktreeToDelete: (worktree: Worktree, repoId: UUID)?
     @State private var deleteError: String?
 
     var body: some View {
-        @Bindable var state = appState
+        VStack(spacing: 0) {
+            // Header
+            HStack {
+                Text("Worktrees")
+                    .font(.headline)
+                    .foregroundColor(.textPrimary)
 
-        List(selection: $state.selectedWorktreeId) {
-            // Active worktrees by repo
-            ForEach(appState.repositories) { repo in
-                Section {
-                    // Repo row (swipeable)
-                    RepoRow(repo: repo) {
-                        appState.selectedRepositoryId = repo.id
-                        showingAddWorktree = true
-                    }
-                    .swipeActions(edge: .trailing, allowsFullSwipe: false) {
-                        Button(role: .destructive) {
-                            repoToRemove = repo
-                        } label: {
-                            Label("Remove", systemImage: "folder.badge.minus")
-                        }
-                    }
+                Spacer()
 
-                    // Worktrees
-                    ForEach(appState.activeWorktrees(for: repo)) { worktree in
-                        WorktreeRow(worktree: worktree)
-                            .tag(worktree.id)
-                            .swipeActions(edge: .trailing, allowsFullSwipe: false) {
-                                Button(role: .destructive) {
-                                    worktreeToDelete = (worktree, repo.id)
-                                } label: {
-                                    Label("Delete", systemImage: "trash")
-                                }
-
-                                Button {
-                                    appState.archiveWorktree(worktree.id, in: repo.id)
-                                } label: {
-                                    Label("Archive", systemImage: "archivebox")
-                                }
-                                .tint(.orange)
-                            }
-                    }
-                }
-            }
-
-            // Archived section
-            if appState.hasArchivedWorktrees() {
-                Section {
-                    DisclosureGroup {
-                        ForEach(appState.repositories) { repo in
-                            ForEach(appState.archivedWorktrees(for: repo)) { worktree in
-                                ArchivedWorktreeRow(worktree: worktree, repoName: repo.name)
-                                    .tag(worktree.id)
-                                    .swipeActions(edge: .trailing, allowsFullSwipe: false) {
-                                        Button(role: .destructive) {
-                                            worktreeToDelete = (worktree, repo.id)
-                                        } label: {
-                                            Label("Delete", systemImage: "trash")
-                                        }
-                                    }
-                                    .swipeActions(edge: .leading, allowsFullSwipe: true) {
-                                        Button {
-                                            appState.unarchiveWorktree(worktree.id, in: repo.id)
-                                        } label: {
-                                            Label("Restore", systemImage: "arrow.uturn.backward")
-                                        }
-                                        .tint(.forest)
-                                    }
-                            }
-                        }
-                    } label: {
-                        Label("Archived", systemImage: "archivebox")
-                            .foregroundStyle(.secondary)
-                    }
-                }
-            }
-        }
-        .listStyle(.sidebar)
-        .frame(minWidth: 240)
-        .toolbar {
-            ToolbarItem(placement: .primaryAction) {
-                Button {
+                IconButton(icon: "plus") {
                     showingAddRepo = true
-                } label: {
-                    Label("Add Repository", systemImage: "folder.badge.plus")
+                }
+            }
+            .padding(.horizontal, Spacing.lg)
+            .padding(.vertical, Spacing.md)
+
+            SubtleDivider()
+
+            // Content
+            if appState.repositories.isEmpty {
+                emptyState
+            } else {
+                ScrollView {
+                    LazyVStack(spacing: Spacing.xs) {
+                        ForEach(appState.repositories) { repo in
+                            repoSection(repo)
+                        }
+
+                        // Archived
+                        if appState.hasArchivedWorktrees() {
+                            archivedSection
+                                .padding(.top, Spacing.md)
+                        }
+                    }
+                    .padding(.vertical, Spacing.sm)
                 }
             }
         }
+        .background(Color.bg)
         .sheet(isPresented: $showingAddRepo) {
             AddRepositorySheet()
         }
-        .sheet(isPresented: $showingAddWorktree) {
-            if let repoId = appState.selectedRepositoryId {
-                AddWorktreeSheet(repositoryId: repoId)
-            }
+        .sheet(item: $worktreeSheetRepoId) { repoId in
+            AddWorktreeSheet(repositoryId: repoId)
         }
         .alert("Remove Repository?", isPresented: Binding(
             get: { repoToRemove != nil },
             set: { if !$0 { repoToRemove = nil } }
         )) {
-            Button("Cancel", role: .cancel) {
-                repoToRemove = nil
-            }
+            Button("Cancel", role: .cancel) { repoToRemove = nil }
             Button("Remove", role: .destructive) {
                 if let repo = repoToRemove {
                     appState.removeRepository(repo)
@@ -121,9 +76,7 @@ struct SidebarView: View {
             get: { worktreeToDelete != nil },
             set: { if !$0 { worktreeToDelete = nil } }
         )) {
-            Button("Cancel", role: .cancel) {
-                worktreeToDelete = nil
-            }
+            Button("Cancel", role: .cancel) { worktreeToDelete = nil }
             Button("Delete", role: .destructive) {
                 if let (worktree, repoId) = worktreeToDelete {
                     do {
@@ -135,7 +88,7 @@ struct SidebarView: View {
                 worktreeToDelete = nil
             }
         } message: {
-            Text("This will permanently delete \"\(worktreeToDelete?.worktree.name ?? "")\" and remove it from git. This cannot be undone.")
+            Text("This will permanently delete \"\(worktreeToDelete?.worktree.name ?? "")\" and remove it from git.")
         }
         .alert("Error", isPresented: Binding(
             get: { deleteError != nil },
@@ -146,95 +99,289 @@ struct SidebarView: View {
             Text(deleteError ?? "")
         }
     }
+
+    private var emptyState: some View {
+        VStack(spacing: Spacing.md) {
+            Spacer()
+
+            Image(systemName: "folder.badge.plus")
+                .font(.system(size: 36, weight: .light))
+                .foregroundColor(.textMuted)
+
+            VStack(spacing: Spacing.xs) {
+                Text("No repositories")
+                    .font(.bodyMedium)
+                    .foregroundColor(.textSecondary)
+
+                Text("Add a repository to get started")
+                    .font(.caption)
+                    .foregroundColor(.textTertiary)
+            }
+
+            Spacer()
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+
+    @ViewBuilder
+    private func repoSection(_ repo: Repository) -> some View {
+        VStack(spacing: 0) {
+            // Repo header
+            RepoHeaderRow(
+                repo: repo,
+                onAdd: {
+                    worktreeSheetRepoId = repo.id
+                },
+                onRemove: {
+                    repoToRemove = repo
+                }
+            )
+
+            // Worktrees
+            ForEach(appState.activeWorktrees(for: repo)) { worktree in
+                WorktreeListRow(
+                    worktree: worktree,
+                    isSelected: appState.selectedWorktreeId == worktree.id,
+                    onSelect: {
+                        appState.selectedWorktreeId = worktree.id
+                    },
+                    onArchive: {
+                        appState.archiveWorktree(worktree.id, in: repo.id)
+                    },
+                    onDelete: {
+                        worktreeToDelete = (worktree, repo.id)
+                    }
+                )
+            }
+        }
+    }
+
+    private var archivedSection: some View {
+        VStack(spacing: 0) {
+            DisclosureGroup {
+                ForEach(appState.repositories) { repo in
+                    ForEach(appState.archivedWorktrees(for: repo)) { worktree in
+                        ArchivedListRow(
+                            worktree: worktree,
+                            repoName: repo.name,
+                            isSelected: appState.selectedWorktreeId == worktree.id,
+                            onSelect: {
+                                appState.selectedWorktreeId = worktree.id
+                            },
+                            onRestore: {
+                                appState.unarchiveWorktree(worktree.id, in: repo.id)
+                            },
+                            onDelete: {
+                                worktreeToDelete = (worktree, repo.id)
+                            }
+                        )
+                    }
+                }
+            } label: {
+                HStack(spacing: Spacing.sm) {
+                    Image(systemName: "archivebox")
+                        .font(.system(size: 12))
+                        .foregroundColor(.textTertiary)
+                    Text("Archived")
+                        .font(.caption)
+                        .foregroundColor(.textTertiary)
+                }
+            }
+            .padding(.horizontal, Spacing.lg)
+            .padding(.vertical, Spacing.sm)
+        }
+    }
 }
 
-struct RepoRow: View {
+// MARK: - Repo Header Row
+
+struct RepoHeaderRow: View {
     let repo: Repository
-    let onAddWorktree: () -> Void
+    let onAdd: () -> Void
+    let onRemove: () -> Void
 
     @State private var isHovering = false
 
     var body: some View {
-        HStack(spacing: 8) {
-            Image(systemName: "tree.fill")
-                .foregroundStyle(.forest)
-                .font(.system(size: 16))
+        HStack(spacing: Spacing.sm) {
+            Image(systemName: "folder.fill")
+                .font(.system(size: 12))
+                .foregroundColor(.accent)
 
             Text(repo.name)
-                .font(.headline)
-                .foregroundStyle(.primary)
+                .font(.captionMedium)
+                .foregroundColor(.textSecondary)
 
             Spacer()
 
-            Button(action: onAddWorktree) {
-                Image(systemName: "plus.circle.fill")
-                    .font(.system(size: 18))
-                    .foregroundStyle(.forest)
-                    .symbolRenderingMode(.hierarchical)
+            if isHovering {
+                HStack(spacing: 2) {
+                    Button(action: onAdd) {
+                        Image(systemName: "plus")
+                            .font(.system(size: 10, weight: .semibold))
+                            .foregroundColor(.textTertiary)
+                            .frame(width: 20, height: 20)
+                            .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+
+                    Button(action: onRemove) {
+                        Image(systemName: "minus")
+                            .font(.system(size: 10, weight: .semibold))
+                            .foregroundColor(.textTertiary)
+                            .frame(width: 20, height: 20)
+                            .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                }
+                .transition(.opacity.combined(with: .scale(scale: 0.9)))
             }
-            .buttonStyle(.plain)
-            .opacity(isHovering ? 1 : 0.7)
-            .scaleEffect(isHovering ? 1.1 : 1.0)
-            .animation(.easeInOut(duration: 0.15), value: isHovering)
         }
-        .padding(.vertical, 4)
+        .padding(.horizontal, Spacing.lg)
+        .padding(.vertical, Spacing.sm)
         .contentShape(Rectangle())
-        .onHover { hovering in
-            isHovering = hovering
-        }
+        .onHover { isHovering = $0 }
+        .animation(.easeOut(duration: 0.15), value: isHovering)
     }
 }
 
-struct WorktreeRow: View {
+// MARK: - Worktree List Row
+
+struct WorktreeListRow: View {
     let worktree: Worktree
+    let isSelected: Bool
+    let onSelect: () -> Void
+    let onArchive: () -> Void
+    let onDelete: () -> Void
+
+    @State private var isHovering = false
 
     var body: some View {
-        HStack {
-            Image(systemName: "leaf.fill")
-                .foregroundStyle(.forest.opacity(0.7))
-                .font(.caption)
+        HStack(spacing: Spacing.md) {
+            // Accent indicator
+            RoundedRectangle(cornerRadius: 2)
+                .fill(isSelected ? Color.accent : Color.clear)
+                .frame(width: 3, height: 32)
+
             VStack(alignment: .leading, spacing: 2) {
                 Text(worktree.name)
-                    .fontWeight(.medium)
+                    .font(.bodyMedium)
+                    .foregroundColor(isSelected ? .textPrimary : .textSecondary)
+
                 Text(worktree.branch)
                     .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .foregroundColor(.textTertiary)
+            }
+
+            Spacer()
+
+            if isHovering {
+                HStack(spacing: 4) {
+                    Button(action: onArchive) {
+                        Image(systemName: "archivebox")
+                            .font(.system(size: 11))
+                            .foregroundColor(.textTertiary)
+                            .frame(width: 22, height: 22)
+                            .background(Color.bgHover)
+                            .clipShape(RoundedRectangle(cornerRadius: 4))
+                    }
+                    .buttonStyle(.plain)
+
+                    Button(action: onDelete) {
+                        Image(systemName: "trash")
+                            .font(.system(size: 11))
+                            .foregroundColor(.destructive)
+                            .frame(width: 22, height: 22)
+                            .background(Color.destructiveLight)
+                            .clipShape(RoundedRectangle(cornerRadius: 4))
+                    }
+                    .buttonStyle(.plain)
+                }
+                .transition(.opacity.combined(with: .scale(scale: 0.95)))
             }
         }
-        .padding(.vertical, 2)
-        .padding(.leading, 8)
+        .padding(.horizontal, Spacing.md)
+        .padding(.vertical, Spacing.sm)
+        .background(isSelected ? Color.bgSelected : (isHovering ? Color.bgHover : Color.clear))
+        .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+        .padding(.horizontal, Spacing.sm)
+        .contentShape(Rectangle())
+        .onTapGesture(perform: onSelect)
+        .onHover { isHovering = $0 }
+        .animation(.easeOut(duration: 0.12), value: isSelected)
+        .animation(.easeOut(duration: 0.12), value: isHovering)
     }
 }
 
-struct ArchivedWorktreeRow: View {
+// MARK: - Archived List Row
+
+struct ArchivedListRow: View {
     let worktree: Worktree
     let repoName: String
+    let isSelected: Bool
+    let onSelect: () -> Void
+    let onRestore: () -> Void
+    let onDelete: () -> Void
+
+    @State private var isHovering = false
 
     var body: some View {
-        HStack {
-            Image(systemName: "leaf")
-                .foregroundStyle(.secondary)
-                .font(.caption)
+        HStack(spacing: Spacing.md) {
+            RoundedRectangle(cornerRadius: 2)
+                .fill(Color.textMuted)
+                .frame(width: 3, height: 32)
+
             VStack(alignment: .leading, spacing: 2) {
                 Text(worktree.name)
-                    .fontWeight(.medium)
-                    .foregroundStyle(.secondary)
+                    .font(.bodyMedium)
+                    .foregroundColor(.textTertiary)
+
                 Text("\(repoName) · \(worktree.branch)")
                     .font(.caption)
-                    .foregroundStyle(.tertiary)
+                    .foregroundColor(.textMuted)
+            }
+
+            Spacer()
+
+            if isHovering {
+                HStack(spacing: 4) {
+                    Button(action: onRestore) {
+                        Image(systemName: "arrow.uturn.backward")
+                            .font(.system(size: 11))
+                            .foregroundColor(.accent)
+                            .frame(width: 22, height: 22)
+                            .background(Color.accentLight)
+                            .clipShape(RoundedRectangle(cornerRadius: 4))
+                    }
+                    .buttonStyle(.plain)
+
+                    Button(action: onDelete) {
+                        Image(systemName: "trash")
+                            .font(.system(size: 11))
+                            .foregroundColor(.destructive)
+                            .frame(width: 22, height: 22)
+                            .background(Color.destructiveLight)
+                            .clipShape(RoundedRectangle(cornerRadius: 4))
+                    }
+                    .buttonStyle(.plain)
+                }
+                .transition(.opacity.combined(with: .scale(scale: 0.95)))
             }
         }
-        .padding(.vertical, 2)
-    }
-}
-
-extension ShapeStyle where Self == Color {
-    static var forest: Color {
-        Color(red: 0.29, green: 0.49, blue: 0.35)
+        .padding(.horizontal, Spacing.md)
+        .padding(.vertical, Spacing.sm)
+        .background(isSelected ? Color.bgSelected : (isHovering ? Color.bgHover : Color.clear))
+        .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+        .padding(.horizontal, Spacing.sm)
+        .contentShape(Rectangle())
+        .onTapGesture(perform: onSelect)
+        .onHover { isHovering = $0 }
+        .animation(.easeOut(duration: 0.12), value: isHovering)
     }
 }
 
 #Preview {
     SidebarView()
         .environment(AppState())
+        .frame(width: 280, height: 500)
 }

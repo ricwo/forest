@@ -8,65 +8,119 @@ struct AddRepositorySheet: View {
     @State private var errorMessage: String?
 
     var body: some View {
-        VStack(spacing: 20) {
-            VStack(spacing: 8) {
-                Image(systemName: "tree.fill")
-                    .font(.system(size: 40))
-                    .foregroundStyle(.forest)
+        VStack(spacing: 0) {
+            // Header
+            VStack(spacing: Spacing.sm) {
+                Image(systemName: "folder.badge.plus")
+                    .font(.system(size: 36, weight: .light))
+                    .foregroundColor(.accent)
 
                 Text("Add Repository")
-                    .font(.headline)
+                    .font(.displayMedium)
+                    .foregroundColor(.textPrimary)
 
-                Text("Select a local git repository to manage with Forest")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-                    .multilineTextAlignment(.center)
+                Text("Select a local git repository to manage")
+                    .font(.bodyRegular)
+                    .foregroundColor(.textSecondary)
             }
-            .padding(.top)
+            .padding(.top, Spacing.xxl)
+            .padding(.bottom, Spacing.xl)
 
-            if !selectedPath.isEmpty {
-                GroupBox {
-                    HStack {
+            // Content
+            VStack(spacing: Spacing.md) {
+                if selectedPath.isEmpty {
+                    Button {
+                        chooseFolder()
+                    } label: {
+                        HStack(spacing: Spacing.sm) {
+                            Image(systemName: "folder")
+                                .font(.system(size: 14))
+                            Text("Choose Folder")
+                        }
+                        .frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(SubtleButtonStyle())
+                } else {
+                    HStack(spacing: Spacing.sm) {
                         Image(systemName: "folder.fill")
-                            .foregroundStyle(.forest)
+                            .font(.system(size: 12))
+                            .foregroundColor(.accent)
+
                         Text(selectedPath)
+                            .font(.mono)
+                            .foregroundColor(.textSecondary)
                             .lineLimit(1)
                             .truncationMode(.head)
+
                         Spacer()
+
+                        Button {
+                            selectedPath = ""
+                            errorMessage = nil
+                        } label: {
+                            Image(systemName: "xmark")
+                                .font(.system(size: 10, weight: .semibold))
+                                .foregroundColor(.textTertiary)
+                        }
+                        .buttonStyle(.plain)
+                    }
+                    .padding(Spacing.md)
+                    .background(Color.accentLight)
+                    .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 8, style: .continuous)
+                            .strokeBorder(Color.accent.opacity(0.2), lineWidth: 1)
+                    )
+                }
+
+                if let error = errorMessage {
+                    HStack(spacing: Spacing.sm) {
+                        Image(systemName: "exclamationmark.triangle.fill")
+                            .font(.system(size: 11))
+                            .foregroundColor(.destructive)
+
+                        Text(error)
+                            .font(.caption)
+                            .foregroundColor(.destructive)
                     }
                 }
             }
+            .padding(.horizontal, Spacing.xl)
 
-            if let error = errorMessage {
-                Text(error)
-                    .foregroundStyle(.red)
-                    .font(.caption)
-            }
+            Spacer()
+
+            // Footer
+            SubtleDivider()
 
             HStack {
                 Button("Cancel") {
                     dismiss()
                 }
+                .buttonStyle(GhostButtonStyle())
                 .keyboardShortcut(.cancelAction)
 
                 Spacer()
 
-                Button("Choose Folder...") {
-                    chooseFolder()
+                if !selectedPath.isEmpty {
+                    Button {
+                        chooseFolder()
+                    } label: {
+                        Text("Change")
+                    }
+                    .buttonStyle(SubtleButtonStyle())
                 }
 
-                if !selectedPath.isEmpty {
-                    Button("Add Repository") {
-                        addRepository()
-                    }
-                    .keyboardShortcut(.defaultAction)
-                    .buttonStyle(.borderedProminent)
-                    .tint(.forest)
+                Button("Add Repository") {
+                    addRepository()
                 }
+                .buttonStyle(AccentButtonStyle())
+                .keyboardShortcut(.defaultAction)
+                .disabled(selectedPath.isEmpty || errorMessage != nil)
             }
+            .padding(Spacing.lg)
         }
-        .padding()
-        .frame(width: 400, height: 250)
+        .frame(width: 420, height: 320)
+        .background(Color.bgElevated)
     }
 
     private func chooseFolder() {
@@ -81,7 +135,7 @@ struct AddRepositorySheet: View {
             errorMessage = nil
 
             if !GitService.shared.isGitRepository(at: selectedPath) {
-                errorMessage = "This folder is not a git repository"
+                errorMessage = "Not a git repository"
             }
         }
     }
@@ -89,7 +143,7 @@ struct AddRepositorySheet: View {
     private func addRepository() {
         guard !selectedPath.isEmpty else { return }
         guard GitService.shared.isGitRepository(at: selectedPath) else {
-            errorMessage = "This folder is not a git repository"
+            errorMessage = "Not a git repository"
             return
         }
 
