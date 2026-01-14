@@ -1,11 +1,11 @@
 import Foundation
 
 enum Editor: String, CaseIterable, Identifiable {
-    case vscode = "vscode"
-    case cursor = "cursor"
-    case pycharm = "pycharm"
-    case xcode = "xcode"
-    case sublime = "sublime"
+    case vscode
+    case cursor
+    case pycharm
+    case xcode
+    case sublime
 
     var id: String { rawValue }
 

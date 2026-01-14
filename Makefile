@@ -3,7 +3,25 @@ MAJOR := $(shell echo $(CURRENT_VERSION) | cut -d. -f1)
 MINOR := $(shell echo $(CURRENT_VERSION) | cut -d. -f2)
 PATCH := $(shell echo $(CURRENT_VERSION) | cut -d. -f3)
 
-.PHONY: release-major release-minor release-patch
+.PHONY: build check lint test release-major release-minor release-patch
+
+# Development
+build:
+	xcodebuild -scheme forest -configuration Debug build
+
+check:
+	xcodebuild -scheme forest -configuration Debug build -quiet
+
+lint:
+	@if command -v swiftlint >/dev/null 2>&1; then \
+		swiftlint lint --quiet; \
+	else \
+		echo "SwiftLint not installed. Run: brew install swiftlint"; \
+		exit 1; \
+	fi
+
+test:
+	xcodebuild -scheme forest -configuration Debug test -quiet
 
 release-major:
 	@echo "Release $(CURRENT_VERSION) → $(shell echo $$(($(MAJOR)+1))).0.0"
