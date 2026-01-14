@@ -1,12 +1,49 @@
 import Foundation
 import SwiftUI
 
+enum Selection: Equatable {
+    case repository(UUID)
+    case worktree(UUID)
+}
+
 @Observable
 class AppState {
     var repositories: [Repository] = []
-    var selectedRepositoryId: UUID?
-    var selectedWorktreeId: UUID?
+    var selection: Selection?
     var showArchived: Bool = false
+
+    // Legacy compatibility - maps to selection
+    var selectedRepositoryId: UUID? {
+        get {
+            if case .repository(let id) = selection {
+                return id
+            }
+            return nil
+        }
+        set {
+            if let id = newValue {
+                selection = .repository(id)
+            } else if case .repository = selection {
+                selection = nil
+            }
+        }
+    }
+
+    var selectedWorktreeId: UUID? {
+        get {
+            if case .worktree(let id) = selection {
+                return id
+            }
+            return nil
+        }
+        set {
+            if let id = newValue {
+                selection = .worktree(id)
+            } else if case .worktree = selection {
+                selection = nil
+            }
+        }
+    }
 
     private let configURL: URL
     private let forestDirectory: URL
@@ -89,10 +126,22 @@ class AppState {
     }
 
     func removeRepository(_ repo: Repository) {
+        // Check if current selection is related to this repo
+        let shouldClearSelection: Bool = {
+            switch selection {
+            case .repository(let id):
+                return id == repo.id
+            case .worktree(let worktreeId):
+                return repo.worktrees.contains { $0.id == worktreeId }
+            case nil:
+                return false
+            }
+        }()
+
         repositories.removeAll { $0.id == repo.id }
-        if selectedRepositoryId == repo.id {
-            selectedRepositoryId = nil
-            selectedWorktreeId = nil
+
+        if shouldClearSelection {
+            selection = nil
         }
         saveConfig()
     }

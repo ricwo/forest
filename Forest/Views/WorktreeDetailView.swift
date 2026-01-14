@@ -12,6 +12,11 @@ struct WorktreeDetailView: View {
     @State private var errorMessage: String?
     @State private var showDeleteConfirmation = false
     @State private var showArchiveConfirmation = false
+    @State private var claudeSessions: [ClaudeSession] = []
+    @State private var currentBranch: String?
+
+    // Auto-refresh timer (every 3 seconds)
+    private let refreshTimer = Timer.publish(every: 3, on: .main, in: .common).autoconnect()
 
     var body: some View {
         VStack(spacing: 0) {
@@ -25,24 +30,39 @@ struct WorktreeDetailView: View {
 
             // Content
             ScrollView {
-                VStack(spacing: Spacing.xxl) {
+                VStack(alignment: .leading, spacing: Spacing.xxl) {
                     // Info section
                     infoSection
 
                     // Quick actions
                     actionsSection
 
+                    // Claude sessions
+                    if !claudeSessions.isEmpty {
+                        claudeSessionsSection
+                    }
+
                     // Manage section
                     manageSection
+
+                    Spacer()
                 }
+                .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(Spacing.xl)
             }
         }
         .background(Color.bgElevated)
+        .onAppear {
+            refreshAll()
+        }
         .onChange(of: worktree.id) {
             isEditingName = false
             isEditingBranch = false
             errorMessage = nil
+            refreshAll()
+        }
+        .onReceive(refreshTimer) { _ in
+            refreshAll()
         }
         .alert("Archive Worktree?", isPresented: $showArchiveConfirmation) {
             Button("Cancel", role: .cancel) {}
@@ -50,7 +70,7 @@ struct WorktreeDetailView: View {
                 appState.archiveWorktree(worktree.id, in: repositoryId)
             }
         } message: {
-            Text("This worktree will be hidden from the main list but preserved on disk.")
+            Text("The worktree will be hidden from the sidebar but all files remain on disk. You can restore it anytime from the Archived section.")
         }
         .alert("Delete Worktree?", isPresented: $showDeleteConfirmation) {
             Button("Cancel", role: .cancel) {}
@@ -58,7 +78,7 @@ struct WorktreeDetailView: View {
                 deleteWorktree()
             }
         } message: {
-            Text("This will permanently delete \"\(worktree.name)\" and remove it from git.")
+            Text("This will run `git worktree remove` which permanently deletes the directory at:\n\n\(worktree.path)\n\nThis cannot be undone.")
         }
     }
 
@@ -67,6 +87,18 @@ struct WorktreeDetailView: View {
     private var header: some View {
         HStack(alignment: .top) {
             VStack(alignment: .leading, spacing: Spacing.sm) {
+                // Worktree badge
+                HStack(spacing: Spacing.sm) {
+                    Image(systemName: "arrow.triangle.branch")
+                        .font(.system(size: 11))
+                        .foregroundColor(.textTertiary)
+
+                    Text("WORKTREE")
+                        .font(.system(size: 10, weight: .semibold, design: .rounded))
+                        .foregroundColor(.textTertiary)
+                        .tracking(0.8)
+                }
+
                 if isEditingName {
                     HStack(spacing: Spacing.sm) {
                         MinimalTextField(placeholder: "Name", text: $editedName)
@@ -113,12 +145,12 @@ struct WorktreeDetailView: View {
                             .font(.system(size: 11))
                             .foregroundColor(.accent)
 
-                        Text(worktree.branch)
+                        Text(currentBranch ?? worktree.branch)
                             .font(.mono)
                             .foregroundColor(.textSecondary)
 
                         Button {
-                            editedBranch = worktree.branch
+                            editedBranch = currentBranch ?? worktree.branch
                             isEditingBranch = true
                         } label: {
                             Image(systemName: "pencil")
@@ -214,15 +246,34 @@ struct WorktreeDetailView: View {
                 .keyboardShortcut("t", modifiers: .command)
 
                 ActionButton(
-                    icon: "chevron.left.forwardslash.chevron.right",
+                    icon: "",
                     label: "PyCharm",
-                    shortcut: "⌘P"
+                    shortcut: "⌘P",
+                    customImage: "PyCharmLogo"
                 ) {
                     openInPyCharm()
                 }
                 .keyboardShortcut("p", modifiers: .command)
             }
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    // MARK: - Claude Sessions Section
+
+    private var claudeSessionsSection: some View {
+        VStack(alignment: .leading, spacing: Spacing.md) {
+            SectionHeader(title: "Claude Sessions")
+
+            VStack(spacing: Spacing.xs) {
+                ForEach(claudeSessions.prefix(5)) { session in
+                    ClaudeSessionRow(session: session) {
+                        continueSession(session)
+                    }
+                }
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     // MARK: - Manage Section
@@ -255,6 +306,7 @@ struct WorktreeDetailView: View {
                 .buttonStyle(DestructiveButtonStyle())
             }
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     // MARK: - Actions
@@ -319,6 +371,136 @@ struct WorktreeDetailView: View {
             errorMessage = "PyCharm not found. Install from jetbrains.com or use Toolbox."
         }
     }
+
+    private func refreshAll() {
+        loadBranch()
+        loadClaudeSessions()
+    }
+
+    private func loadBranch() {
+        currentBranch = GitService.shared.getCurrentBranch(at: worktree.path)
+    }
+
+    private func loadClaudeSessions() {
+        claudeSessions = ClaudeSessionService.shared.getSessions(for: worktree.path)
+    }
+
+    private func continueSession(_ session: ClaudeSession) {
+        // Open terminal and run claude -r <session-id>
+        let script = """
+            cd '\(worktree.path)' && claude -r '\(session.id)'
+        """
+
+        let apps = ["iTerm", "Terminal"]
+
+        for app in apps {
+            let process = Process()
+            process.executableURL = URL(fileURLWithPath: "/usr/bin/osascript")
+
+            if app == "iTerm" {
+                process.arguments = [
+                    "-e", """
+                        tell application "iTerm"
+                            activate
+                            set newWindow to (create window with default profile)
+                            tell current session of newWindow
+                                write text "\(script)"
+                            end tell
+                        end tell
+                    """
+                ]
+            } else {
+                process.arguments = [
+                    "-e", """
+                        tell application "Terminal"
+                            activate
+                            do script "\(script)"
+                        end tell
+                    """
+                ]
+            }
+
+            do {
+                try process.run()
+                return
+            } catch {
+                continue
+            }
+        }
+
+        errorMessage = "Could not open terminal"
+    }
+}
+
+// MARK: - Claude Session Row
+
+struct ClaudeSessionRow: View {
+    let session: ClaudeSession
+    let onContinue: () -> Void
+
+    @State private var isHovering = false
+
+    var body: some View {
+        Button(action: onContinue) {
+            HStack(spacing: Spacing.sm) {
+                Image("ClaudeLogo")
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .frame(width: 18, height: 18)
+
+                VStack(alignment: .leading, spacing: Spacing.xxs) {
+                    Text(session.title)
+                        .font(.bodyRegular)
+                        .foregroundColor(.textPrimary)
+                        .lineLimit(1)
+                        .truncationMode(.tail)
+
+                    HStack(spacing: Spacing.sm) {
+                        Text(session.relativeTime)
+                            .font(.caption)
+                            .foregroundColor(.textTertiary)
+
+                        Text("·")
+                            .font(.caption)
+                            .foregroundColor(.textMuted)
+
+                        Text("\(session.messageCount) messages")
+                            .font(.caption)
+                            .foregroundColor(.textTertiary)
+
+                        if let branch = session.primaryBranch {
+                            Text("·")
+                                .font(.caption)
+                                .foregroundColor(.textMuted)
+
+                            Text(branch)
+                                .font(.mono)
+                                .foregroundColor(.textTertiary)
+                                .lineLimit(1)
+                        }
+                    }
+                }
+
+                Spacer()
+
+                if isHovering {
+                    Image(systemName: "arrow.right.circle")
+                        .font(.system(size: 14))
+                        .foregroundColor(.accent)
+                }
+            }
+            .padding(Spacing.md)
+            .background(isHovering ? Color.bgHover : Color.bg)
+            .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+            .overlay(
+                RoundedRectangle(cornerRadius: 8, style: .continuous)
+                    .strokeBorder(isHovering ? Color.accent.opacity(0.3) : Color.border, lineWidth: 1)
+            )
+        }
+        .buttonStyle(.plain)
+        .onHover { isHovering = $0 }
+        .animation(.easeOut(duration: 0.15), value: isHovering)
+    }
 }
 
 // MARK: - Action Button
@@ -328,15 +510,23 @@ struct ActionButton: View {
     let label: String
     let shortcut: String
     let action: () -> Void
+    var customImage: String? = nil
 
     @State private var isHovering = false
 
     var body: some View {
         Button(action: action) {
             VStack(spacing: Spacing.sm) {
-                Image(systemName: icon)
-                    .font(.system(size: 20, weight: .light))
-                    .foregroundColor(isHovering ? .accent : .textSecondary)
+                if let imageName = customImage {
+                    Image(imageName)
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .frame(width: 20, height: 20)
+                } else {
+                    Image(systemName: icon)
+                        .font(.system(size: 20, weight: .light))
+                        .foregroundColor(isHovering ? .accent : .textSecondary)
+                }
 
                 Text(label)
                     .font(.captionMedium)

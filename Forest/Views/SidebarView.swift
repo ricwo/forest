@@ -126,9 +126,13 @@ struct SidebarView: View {
     @ViewBuilder
     private func repoSection(_ repo: Repository) -> some View {
         VStack(spacing: 0) {
-            // Repo header
+            // Repo header (now selectable)
             RepoHeaderRow(
                 repo: repo,
+                isSelected: appState.selection == .repository(repo.id),
+                onSelect: {
+                    appState.selection = .repository(repo.id)
+                },
                 onAdd: {
                     worktreeSheetRepoId = repo.id
                 },
@@ -141,9 +145,9 @@ struct SidebarView: View {
             ForEach(appState.activeWorktrees(for: repo)) { worktree in
                 WorktreeListRow(
                     worktree: worktree,
-                    isSelected: appState.selectedWorktreeId == worktree.id,
+                    isSelected: appState.selection == .worktree(worktree.id),
                     onSelect: {
-                        appState.selectedWorktreeId = worktree.id
+                        appState.selection = .worktree(worktree.id)
                     },
                     onArchive: {
                         appState.archiveWorktree(worktree.id, in: repo.id)
@@ -164,9 +168,9 @@ struct SidebarView: View {
                         ArchivedListRow(
                             worktree: worktree,
                             repoName: repo.name,
-                            isSelected: appState.selectedWorktreeId == worktree.id,
+                            isSelected: appState.selection == .worktree(worktree.id),
                             onSelect: {
-                                appState.selectedWorktreeId = worktree.id
+                                appState.selection = .worktree(worktree.id)
                             },
                             onRestore: {
                                 appState.unarchiveWorktree(worktree.id, in: repo.id)
@@ -197,20 +201,27 @@ struct SidebarView: View {
 
 struct RepoHeaderRow: View {
     let repo: Repository
+    let isSelected: Bool
+    let onSelect: () -> Void
     let onAdd: () -> Void
     let onRemove: () -> Void
 
     @State private var isHovering = false
 
     var body: some View {
-        HStack(spacing: Spacing.sm) {
+        HStack(spacing: Spacing.md) {
+            // Accent indicator (same as worktree rows)
+            RoundedRectangle(cornerRadius: 2)
+                .fill(isSelected ? Color.accent : Color.clear)
+                .frame(width: 3, height: 28)
+
             Image(systemName: "folder.fill")
                 .font(.system(size: 12))
                 .foregroundColor(.accent)
 
             Text(repo.name)
                 .font(.captionMedium)
-                .foregroundColor(.textSecondary)
+                .foregroundColor(isSelected ? .textPrimary : .textSecondary)
 
             Spacer()
 
@@ -237,10 +248,15 @@ struct RepoHeaderRow: View {
                 .transition(.opacity.combined(with: .scale(scale: 0.9)))
             }
         }
-        .padding(.horizontal, Spacing.lg)
+        .padding(.horizontal, Spacing.md)
         .padding(.vertical, Spacing.sm)
+        .background(isSelected ? Color.bgSelected : (isHovering ? Color.bgHover : Color.clear))
+        .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+        .padding(.horizontal, Spacing.sm)
         .contentShape(Rectangle())
+        .onTapGesture(perform: onSelect)
         .onHover { isHovering = $0 }
+        .animation(.easeOut(duration: 0.12), value: isSelected)
         .animation(.easeOut(duration: 0.15), value: isHovering)
     }
 }

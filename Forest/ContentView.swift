@@ -12,14 +12,30 @@ struct ContentView: View {
                 .fill(Color.border)
                 .frame(width: 1)
 
+            detailView
+        }
+        .background(Color.bg)
+    }
+
+    @ViewBuilder
+    private var detailView: some View {
+        switch appState.selection {
+        case .repository(let repoId):
+            if let repo = appState.repositories.first(where: { $0.id == repoId }) {
+                RepositoryDetailView(repository: repo)
+            } else {
+                EmptyStateView()
+            }
+        case .worktree(let worktreeId):
             if let worktree = appState.selectedWorktree,
                let repoId = appState.selectedWorktreeRepoId {
                 WorktreeDetailView(worktree: worktree, repositoryId: repoId)
             } else {
                 EmptyStateView()
             }
+        case nil:
+            EmptyStateView()
         }
-        .background(Color.bg)
     }
 }
 
