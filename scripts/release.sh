@@ -17,7 +17,7 @@ fi
 
 echo "Updating version to $VERSION..."
 sed -i '' "s/MARKETING_VERSION = .*/MARKETING_VERSION = $VERSION;/" forest.xcodeproj/project.pbxproj
-git add forest.xcodeproj/project.pbxproj
+git add Forest.xcodeproj/project.pbxproj
 git commit -m "Bump version to $VERSION"
 git push
 
