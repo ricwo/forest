@@ -35,10 +35,6 @@
 		ED5726CD84D2A8272D290C42 /* AppStateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB36F3469A5AE9DAB55097E9 /* AppStateTests.swift */; };
 		EDA49B652F17C2D9002013F8 /* TerminalService.swift in Sources */ = {isa = PBXBuildFile; fileRef = EDA49B642F17C2D9002013F8 /* TerminalService.swift */; };
 		EDB19B920123AE5B3B92133D /* SidebarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F014C97F0739B4F4D14BB631 /* SidebarView.swift */; };
-		EDDB144E2F17C7A9001D876B /* TerminalService.swift in Sources */ = {isa = PBXBuildFile; fileRef = EDDB144D2F17C7A9001D876B /* TerminalService.swift */; };
-		EDDB14502F17C7BC001D876B /* TerminalService.swift in Sources */ = {isa = PBXBuildFile; fileRef = EDDB144F2F17C7BC001D876B /* TerminalService.swift */; };
-		EDDB14522F17C7E6001D876B /* TerminalService.swift in Sources */ = {isa = PBXBuildFile; fileRef = EDDB14512F17C7E6001D876B /* TerminalService.swift */; };
-		EDDB14542F17C80F001D876B /* TerminalService.swift in Sources */ = {isa = PBXBuildFile; fileRef = EDDB14532F17C80F001D876B /* TerminalService.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -79,10 +75,6 @@
 		D2861C7181A2E9444E2C6139 /* claude-color.svg */ = {isa = PBXFileReference; lastKnownFileType = text; path = "claude-color.svg"; sourceTree = "<group>"; };
 		DB36F3469A5AE9DAB55097E9 /* AppStateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppStateTests.swift; sourceTree = "<group>"; };
 		EDA49B642F17C2D9002013F8 /* TerminalService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalService.swift; sourceTree = "<group>"; };
-		EDDB144D2F17C7A9001D876B /* TerminalService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TerminalService.swift; sourceTree = "<group>"; };
-		EDDB144F2F17C7BC001D876B /* TerminalService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TerminalService.swift; sourceTree = "<group>"; };
-		EDDB14512F17C7E6001D876B /* TerminalService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TerminalService.swift; sourceTree = "<group>"; };
-		EDDB14532F17C80F001D876B /* TerminalService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TerminalService.swift; sourceTree = "<group>"; };
 		EEFF112233445566778899B0 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		F014C97F0739B4F4D14BB631 /* SidebarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SidebarView.swift; sourceTree = "<group>"; };
 		FF4DE49D7EF311238D7627AE /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -121,6 +113,7 @@
 				747309C2BF60AA1A0F4F51BF /* ClaudeSessionService.swift */,
 				012CA243328FDE087240D696 /* GitService.swift */,
 				AABB112233445566778899A0 /* SettingsService.swift */,
+				EDA49B642F17C2D9002013F8 /* TerminalService.swift */,
 				8A1B2C3D4E5F6A7B8C9D0E1F /* UpdateService.swift */,
 			);
 			path = Services;
@@ -130,11 +123,6 @@
 			isa = PBXGroup;
 			children = (
 				6D619C1797E742EB9B68B3C3 /* AddRepositorySheet.swift */,
-				EDA49B642F17C2D9002013F8 /* TerminalService.swift */,
-				EDDB144D2F17C7A9001D876B /* TerminalService.swift */,
-				EDDB144F2F17C7BC001D876B /* TerminalService.swift */,
-				EDDB14512F17C7E6001D876B /* TerminalService.swift */,
-				EDDB14532F17C80F001D876B /* TerminalService.swift */,
 				871EB9403895E613CFD51BC2 /* AddWorktreeSheet.swift */,
 				0A74D66DEB7109CDBBC3B6D0 /* RepositoryDetailView.swift */,
 				EEFF112233445566778899B0 /* SettingsView.swift */,
@@ -291,9 +279,6 @@
 			files = (
 				E1084977939613E30CF9A1F2 /* AddRepositorySheet.swift in Sources */,
 				C620092176BD30D4EA8D01E9 /* AddWorktreeSheet.swift in Sources */,
-				EDDB14522F17C7E6001D876B /* TerminalService.swift in Sources */,
-				EDDB14542F17C80F001D876B /* TerminalService.swift in Sources */,
-				EDDB144E2F17C7A9001D876B /* TerminalService.swift in Sources */,
 				0B327FC0E82B76F2B322E4CF /* AppState.swift in Sources */,
 				634C418EFF76B6489C1659F2 /* ClaudeSession.swift in Sources */,
 				69827C8B97F796FDEB44A856 /* ClaudeSessionService.swift in Sources */,
@@ -304,13 +289,12 @@
 				08965CFCA18725C30824C95F /* RepositoryDetailView.swift in Sources */,
 				EDB19B920123AE5B3B92133D /* SidebarView.swift in Sources */,
 				CCDD112233445566778899C0 /* SettingsService.swift in Sources */,
-				EDDB14502F17C7BC001D876B /* TerminalService.swift in Sources */,
 				1122334455667788990011D0 /* SettingsView.swift in Sources */,
+				EDA49B652F17C2D9002013F8 /* TerminalService.swift in Sources */,
 				524D69A2A026015597C5A73C /* Theme.swift in Sources */,
 				E01F2E3D4C5B6A7890ABCDEF /* UpdateService.swift in Sources */,
 				AD05CA3322C86F36BA8912DC /* Worktree.swift in Sources */,
 				534511245F6008AE2CD909BD /* WorktreeDetailView.swift in Sources */,
-				EDA49B652F17C2D9002013F8 /* TerminalService.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
