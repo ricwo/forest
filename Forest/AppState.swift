@@ -223,6 +223,9 @@ class AppState {
         // Update git worktree to point to new location
         try GitService.shared.repairWorktree(repoPath: repo.sourcePath, worktreePath: newURL.path)
 
+        // Migrate Claude session history from old path to new path
+        ClaudeSessionService.shared.migrateSessionHistory(from: oldURL.path, to: newURL.path)
+
         // Update our records
         repositories[repoIndex].worktrees[worktreeIndex].name = newName
         repositories[repoIndex].worktrees[worktreeIndex].path = newURL.path
@@ -281,6 +284,9 @@ class AppState {
 
             // Repair git references to point to new location
             try GitService.shared.repairWorktree(repoPath: repo.sourcePath, worktreePath: newURL.path)
+
+            // Migrate Claude session history from old path to new path
+            ClaudeSessionService.shared.migrateSessionHistory(from: oldURL.path, to: newURL.path)
 
             // Add to our records
             let worktree = Worktree(name: worktreeName, branch: worktreeInfo.branch, path: newURL.path)

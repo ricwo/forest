@@ -6,6 +6,7 @@ extension UUID: @retroactive Identifiable {
 
 struct SidebarView: View {
     @Environment(AppState.self) private var appState
+    @Environment(UpdateService.self) private var updateService
     @State private var showingAddRepo = false
     @State private var worktreeSheetRepoId: UUID?
     @State private var repoToRemove: Repository?
@@ -13,6 +14,7 @@ struct SidebarView: View {
     @State private var deleteError: String?
     @State private var draggedWorktreeId: UUID?
     @State private var dropTargetId: UUID?
+    @State private var showUpdateAlert = false
 
     var body: some View {
         VStack(spacing: 0) {
@@ -21,6 +23,25 @@ struct SidebarView: View {
                 Text("Worktrees")
                     .font(.headline)
                     .foregroundColor(.textPrimary)
+
+                if updateService.updateAvailable {
+                    Button {
+                        showUpdateAlert = true
+                    } label: {
+                        HStack(spacing: 3) {
+                            Image(systemName: "arrow.down.circle.fill")
+                                .font(.system(size: 10))
+                            Text("Update")
+                                .font(.system(size: 10, weight: .medium))
+                        }
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 6)
+                        .padding(.vertical, 3)
+                        .background(Color.accent)
+                        .clipShape(Capsule())
+                    }
+                    .buttonStyle(.plain)
+                }
 
                 Spacer()
 
@@ -99,6 +120,14 @@ struct SidebarView: View {
             Button("OK") { deleteError = nil }
         } message: {
             Text(deleteError ?? "")
+        }
+        .alert("Update Available", isPresented: $showUpdateAlert) {
+            Button("Later", role: .cancel) {}
+            Button("Update Now") {
+                updateService.installUpdate()
+            }
+        } message: {
+            Text("Version \(updateService.latestVersion ?? "?") is available. The app will restart after updating.")
         }
     }
 
@@ -288,55 +317,67 @@ struct RepoHeaderRow: View {
     @State private var isHovering = false
 
     var body: some View {
-        HStack(spacing: Spacing.md) {
-            // Accent indicator (same as worktree rows)
+        HStack(spacing: Spacing.sm) {
+            // Selection indicator
             RoundedRectangle(cornerRadius: 2)
                 .fill(isSelected ? Color.accent : Color.clear)
-                .frame(width: 3, height: 28)
+                .frame(width: 3, height: 20)
 
-            Image(systemName: "folder.fill")
-                .font(.system(size: 12))
-                .foregroundColor(.accent)
+            // Folder icon with background
+            ZStack {
+                RoundedRectangle(cornerRadius: 5, style: .continuous)
+                    .fill(Color.accent.opacity(0.12))
+                    .frame(width: 22, height: 22)
+
+                Image(systemName: "folder.fill")
+                    .font(.system(size: 11, weight: .medium))
+                    .foregroundColor(.accent)
+            }
 
             Text(repo.name)
-                .font(.captionMedium)
+                .font(.headlineSmall)
                 .foregroundColor(isSelected ? .textPrimary : .textSecondary)
 
             Spacer()
 
+            // Hover actions
             if isHovering {
                 HStack(spacing: 2) {
                     Button(action: onAdd) {
                         Image(systemName: "plus")
-                            .font(.system(size: 10, weight: .semibold))
-                            .foregroundColor(.textTertiary)
-                            .frame(width: 20, height: 20)
-                            .contentShape(Rectangle())
+                            .font(.system(size: 9, weight: .bold))
+                            .foregroundColor(.accent)
+                            .frame(width: 18, height: 18)
+                            .background(Color.accentLight)
+                            .clipShape(RoundedRectangle(cornerRadius: 4))
                     }
                     .buttonStyle(.plain)
 
                     Button(action: onRemove) {
-                        Image(systemName: "minus")
-                            .font(.system(size: 10, weight: .semibold))
+                        Image(systemName: "xmark")
+                            .font(.system(size: 8, weight: .bold))
                             .foregroundColor(.textTertiary)
-                            .frame(width: 20, height: 20)
-                            .contentShape(Rectangle())
+                            .frame(width: 18, height: 18)
+                            .background(Color.bgHover)
+                            .clipShape(RoundedRectangle(cornerRadius: 4))
                     }
                     .buttonStyle(.plain)
                 }
-                .transition(.opacity.combined(with: .scale(scale: 0.9)))
+                .transition(.opacity)
             }
         }
-        .padding(.horizontal, Spacing.md)
+        .padding(.horizontal, Spacing.sm)
         .padding(.vertical, Spacing.sm)
-        .background(isSelected ? Color.bgSelected : (isHovering ? Color.bgHover : Color.clear))
-        .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+        .background(
+            RoundedRectangle(cornerRadius: 8, style: .continuous)
+                .fill(isSelected ? Color.bgSelected : (isHovering ? Color.bgHover : Color.bgSubtle.opacity(0.5)))
+        )
         .padding(.horizontal, Spacing.sm)
         .contentShape(Rectangle())
         .onTapGesture(perform: onSelect)
         .onHover { isHovering = $0 }
-        .animation(.easeOut(duration: 0.12), value: isSelected)
-        .animation(.easeOut(duration: 0.15), value: isHovering)
+        .animation(.quick, value: isSelected)
+        .animation(.quick, value: isHovering)
     }
 }
 
@@ -371,46 +412,63 @@ struct WorktreeListRow: View {
     @State private var isHovering = false
 
     var body: some View {
-        HStack(spacing: Spacing.md) {
-            // Accent indicator
-            RoundedRectangle(cornerRadius: 2)
-                .fill(isSelected ? Color.accent : Color.clear)
-                .frame(width: 3, height: 32)
+        HStack(spacing: Spacing.sm) {
+            // Indent spacer + branch indicator
+            HStack(spacing: 0) {
+                // Tree connector line
+                Rectangle()
+                    .fill(Color.border)
+                    .frame(width: 1, height: 20)
+                    .padding(.leading, 18)
 
-            VStack(alignment: .leading, spacing: 2) {
+                // Horizontal connector
+                Rectangle()
+                    .fill(Color.border)
+                    .frame(width: 8, height: 1)
+            }
+
+            // Selection dot
+            Circle()
+                .fill(isSelected ? Color.accent : Color.textMuted.opacity(0.5))
+                .frame(width: 6, height: 6)
+
+            VStack(alignment: .leading, spacing: 1) {
                 Text(worktree.name)
                     .font(.bodyMedium)
                     .foregroundColor(isSelected ? .textPrimary : .textSecondary)
 
                 Text(worktree.branch)
-                    .font(.caption)
+                    .font(.monoSmall)
                     .foregroundColor(.textTertiary)
             }
 
             Spacer()
         }
-        .padding(.horizontal, Spacing.md)
-        .padding(.vertical, Spacing.sm)
-        .background(isSelected ? Color.bgSelected : (isHovering ? Color.bgHover : Color.clear))
-        .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+        .padding(.trailing, Spacing.md)
+        .padding(.vertical, Spacing.xs)
+        .background(
+            RoundedRectangle(cornerRadius: 6, style: .continuous)
+                .fill(isSelected ? Color.bgSelected : (isHovering ? Color.bgHover : Color.clear))
+                .padding(.leading, Spacing.xl)
+        )
         .overlay(alignment: .trailing) {
             if isHovering && !isDragging {
-                HStack(spacing: 4) {
+                HStack(spacing: 3) {
                     Button(action: onArchive) {
                         Image(systemName: "archivebox")
-                            .font(.system(size: 11))
+                            .font(.system(size: 10))
                             .foregroundColor(.textTertiary)
-                            .frame(width: 22, height: 22)
-                            .background(Color.bgHover)
+                            .frame(width: 20, height: 20)
+                            .background(Color.bgSubtle)
                             .clipShape(RoundedRectangle(cornerRadius: 4))
                     }
                     .buttonStyle(.plain)
 
                     Button(action: onDelete) {
                         Image(systemName: "trash")
-                            .font(.system(size: 11))
+                            .font(.system(size: 10))
                             .foregroundColor(.destructive)
-                            .frame(width: 22, height: 22)
+                            .frame(width: 20, height: 20)
                             .background(Color.destructiveLight)
                             .clipShape(RoundedRectangle(cornerRadius: 4))
                     }
@@ -425,9 +483,9 @@ struct WorktreeListRow: View {
         .contentShape(Rectangle())
         .onTapGesture(perform: onSelect)
         .onHover { isHovering = $0 }
-        .animation(.easeOut(duration: 0.12), value: isSelected)
-        .animation(.easeOut(duration: 0.12), value: isHovering)
-        .animation(.easeOut(duration: 0.15), value: isDragging)
+        .animation(.quick, value: isSelected)
+        .animation(.quick, value: isHovering)
+        .animation(.quick, value: isDragging)
     }
 }
 

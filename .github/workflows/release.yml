@@ -1,0 +1,29 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - '[0-9]+.[0-9]+.[0-9]+'
+
+jobs:
+  build:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build
+        run: |
+          xcodebuild -scheme Forest -configuration Release \
+            -archivePath build/Forest.xcarchive archive
+
+      - name: Package
+        run: |
+          mkdir -p release
+          cp -R build/Forest.xcarchive/Products/Applications/Forest.app release/
+          cd release && zip -r Forest.zip Forest.app
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: release/Forest.zip
+          generate_release_notes: true

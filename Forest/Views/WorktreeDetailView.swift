@@ -230,39 +230,37 @@ struct WorktreeDetailView: View {
                 ActionButton(
                     icon: "folder",
                     label: "Finder",
-                    shortcut: "⌘O"
-                ) {
-                    NSWorkspace.shared.selectFile(nil, inFileViewerRootedAtPath: worktree.path)
-                }
+                    shortcut: "⌘O",
+                    action: {
+                        NSWorkspace.shared.selectFile(nil, inFileViewerRootedAtPath: worktree.path)
+                    }
+                )
                 .keyboardShortcut("o", modifiers: .command)
 
                 ActionButton(
                     icon: "terminal",
                     label: "Terminal",
-                    shortcut: "⌘T"
-                ) {
-                    openInTerminal()
-                }
+                    shortcut: "⌘T",
+                    action: openInTerminal
+                )
                 .keyboardShortcut("t", modifiers: .command)
 
                 ActionButton(
                     icon: "",
                     label: "PyCharm",
                     shortcut: "⌘P",
+                    action: openInPyCharm,
                     customImage: "PyCharmLogo"
-                ) {
-                    openInPyCharm()
-                }
+                )
                 .keyboardShortcut("p", modifiers: .command)
 
                 ActionButton(
                     icon: "",
                     label: "Claude",
                     shortcut: "⌘N",
+                    action: startNewClaudeSession,
                     customImage: "ClaudeLogo"
-                ) {
-                    startNewClaudeSession()
-                }
+                )
                 .keyboardShortcut("n", modifiers: .command)
             }
         }
@@ -544,28 +542,64 @@ struct ActionButton: View {
     let shortcut: String
     let action: () -> Void
     var customImage: String? = nil
+    var iconColor: Color? = nil
 
     @State private var isHovering = false
     @State private var isPressed = false
+
+    // App-specific icon colors for a cohesive look
+    private var resolvedIconColor: Color {
+        if let color = iconColor { return color }
+        switch label {
+        case "Finder": return Color(hex: "4A90D9")  // macOS Finder blue
+        case "Terminal": return Color(hex: "2E2E2E")  // Dark terminal
+        default: return .accent
+        }
+    }
+
+    private var resolvedBackgroundColor: Color {
+        switch label {
+        case "Finder": return Color(hex: "4A90D9").opacity(0.1)
+        case "Terminal": return Color(hex: "2E2E2E").opacity(0.08)
+        default: return Color.accentLight
+        }
+    }
 
     var body: some View {
         Button(action: action) {
             VStack(spacing: Spacing.sm) {
                 ZStack {
-                    // Icon background
-                    RoundedRectangle(cornerRadius: 8, style: .continuous)
-                        .fill(isHovering ? Color.accentLight : Color.bgSubtle)
-                        .frame(width: 36, height: 36)
+                    // Icon background with app-specific tint
+                    RoundedRectangle(cornerRadius: 10, style: .continuous)
+                        .fill(isHovering ? resolvedBackgroundColor : Color.bgSubtle)
+                        .frame(width: 40, height: 40)
+
+                    // Subtle inner shadow for depth
+                    RoundedRectangle(cornerRadius: 10, style: .continuous)
+                        .strokeBorder(
+                            LinearGradient(
+                                colors: [Color.white.opacity(0.4), Color.clear],
+                                startPoint: .top,
+                                endPoint: .bottom
+                            ),
+                            lineWidth: 1
+                        )
+                        .frame(width: 40, height: 40)
 
                     if let imageName = customImage {
                         Image(imageName)
                             .resizable()
                             .aspectRatio(contentMode: .fit)
-                            .frame(width: 18, height: 18)
+                            .frame(width: 20, height: 20)
                     } else {
-                        Image(systemName: icon)
-                            .font(.system(size: 16, weight: .medium))
-                            .foregroundColor(isHovering ? .accent : .textSecondary)
+                        // Use filled icons for better visual weight
+                        Image(systemName: filledIcon)
+                            .font(.system(size: 18, weight: .medium))
+                            .foregroundStyle(
+                                isHovering
+                                    ? resolvedIconColor
+                                    : resolvedIconColor.opacity(0.7)
+                            )
                     }
                 }
 
@@ -575,14 +609,17 @@ struct ActionButton: View {
 
                 ShortcutBadge(shortcut)
             }
-            .frame(width: 76, height: 88)
+            .frame(width: 80, height: 94)
             .background(
                 RoundedRectangle(cornerRadius: 12, style: .continuous)
                     .fill(Color.bgElevated)
             )
             .overlay(
                 RoundedRectangle(cornerRadius: 12, style: .continuous)
-                    .strokeBorder(isHovering ? Color.accent.opacity(0.25) : Color.border, lineWidth: isHovering ? 1.5 : 1)
+                    .strokeBorder(
+                        isHovering ? resolvedIconColor.opacity(0.3) : Color.border,
+                        lineWidth: isHovering ? 1.5 : 1
+                    )
             )
             .subtleShadow()
         }
@@ -596,6 +633,15 @@ struct ActionButton: View {
         )
         .animation(.snappy, value: isHovering)
         .animation(.quick, value: isPressed)
+    }
+
+    // Map to filled variants for better visual presence
+    private var filledIcon: String {
+        switch icon {
+        case "folder": return "folder.fill"
+        case "terminal": return "terminal.fill"
+        default: return icon
+        }
     }
 }
 

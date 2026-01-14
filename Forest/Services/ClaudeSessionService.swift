@@ -161,4 +161,54 @@ struct ClaudeSessionService {
 
         return true
     }
+
+    /// Migrate Claude session history from old path to new path
+    /// This should be called when a worktree is moved to a new location
+    func migrateSessionHistory(from oldPath: String, to newPath: String) {
+        let oldFolderName = pathToClaudeFolderName(oldPath)
+        let newFolderName = pathToClaudeFolderName(newPath)
+
+        let oldSessionDir = projectsDir.appendingPathComponent(oldFolderName)
+        let newSessionDir = projectsDir.appendingPathComponent(newFolderName)
+
+        // Check if old session directory exists
+        guard FileManager.default.fileExists(atPath: oldSessionDir.path) else {
+            return
+        }
+
+        // If new directory already exists, merge instead of replace
+        if FileManager.default.fileExists(atPath: newSessionDir.path) {
+            // Move individual files from old to new
+            do {
+                let contents = try FileManager.default.contentsOfDirectory(
+                    at: oldSessionDir,
+                    includingPropertiesForKeys: nil,
+                    options: .skipsHiddenFiles
+                )
+
+                for fileURL in contents {
+                    let destURL = newSessionDir.appendingPathComponent(fileURL.lastPathComponent)
+                    // Skip if file already exists at destination
+                    if !FileManager.default.fileExists(atPath: destURL.path) {
+                        try FileManager.default.moveItem(at: fileURL, to: destURL)
+                    }
+                }
+
+                // Remove old directory if empty
+                let remaining = try FileManager.default.contentsOfDirectory(atPath: oldSessionDir.path)
+                if remaining.isEmpty {
+                    try FileManager.default.removeItem(at: oldSessionDir)
+                }
+            } catch {
+                print("Failed to merge session history: \(error)")
+            }
+        } else {
+            // Simply move the entire directory
+            do {
+                try FileManager.default.moveItem(at: oldSessionDir, to: newSessionDir)
+            } catch {
+                print("Failed to migrate session history: \(error)")
+            }
+        }
+    }
 }

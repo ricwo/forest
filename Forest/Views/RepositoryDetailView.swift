@@ -156,39 +156,37 @@ struct RepositoryDetailView: View {
                 ActionButton(
                     icon: "folder",
                     label: "Finder",
-                    shortcut: "⌘O"
-                ) {
-                    NSWorkspace.shared.selectFile(nil, inFileViewerRootedAtPath: repository.sourcePath)
-                }
+                    shortcut: "⌘O",
+                    action: {
+                        NSWorkspace.shared.selectFile(nil, inFileViewerRootedAtPath: repository.sourcePath)
+                    }
+                )
                 .keyboardShortcut("o", modifiers: .command)
 
                 ActionButton(
                     icon: "terminal",
                     label: "Terminal",
-                    shortcut: "⌘T"
-                ) {
-                    openInTerminal()
-                }
+                    shortcut: "⌘T",
+                    action: openInTerminal
+                )
                 .keyboardShortcut("t", modifiers: .command)
 
                 ActionButton(
                     icon: "",
                     label: "PyCharm",
                     shortcut: "⌘P",
+                    action: openInPyCharm,
                     customImage: "PyCharmLogo"
-                ) {
-                    openInPyCharm()
-                }
+                )
                 .keyboardShortcut("p", modifiers: .command)
 
                 ActionButton(
                     icon: "",
                     label: "Claude",
                     shortcut: "⌘N",
+                    action: startNewClaudeSession,
                     customImage: "ClaudeLogo"
-                ) {
-                    startNewClaudeSession()
-                }
+                )
                 .keyboardShortcut("n", modifiers: .command)
             }
         }
