@@ -135,13 +135,33 @@ struct GitService {
 
         do {
             try process.run()
-            process.waitUntilExit()
         } catch {
             return GitResult(output: "", error: error.localizedDescription, exitCode: -1)
         }
 
-        let outputData = outputPipe.fileHandleForReading.readDataToEndOfFile()
-        let errorData = errorPipe.fileHandleForReading.readDataToEndOfFile()
+        // Read output in background threads to avoid pipe buffer deadlock
+        var outputData = Data()
+        var errorData = Data()
+
+        let group = DispatchGroup()
+
+        group.enter()
+        DispatchQueue.global().async {
+            outputData = outputPipe.fileHandleForReading.readDataToEndOfFile()
+            group.leave()
+        }
+
+        group.enter()
+        DispatchQueue.global().async {
+            errorData = errorPipe.fileHandleForReading.readDataToEndOfFile()
+            group.leave()
+        }
+
+        // Wait for both reads to complete
+        group.wait()
+
+        // Now wait for process (should be done since pipes are closed)
+        process.waitUntilExit()
 
         let output = String(data: outputData, encoding: .utf8) ?? ""
         let errorOutput = String(data: errorData, encoding: .utf8) ?? ""
