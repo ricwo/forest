@@ -20,6 +20,12 @@ enum GitError: Error, LocalizedError {
     }
 }
 
+private struct GitResult {
+    let output: String
+    let error: String
+    let exitCode: Int32
+}
+
 struct GitService {
     static let shared = GitService()
 
@@ -116,7 +122,7 @@ struct GitService {
         return worktrees
     }
 
-    private func runGit(_ arguments: [String], in directory: String) -> (output: String, error: String, exitCode: Int32) {
+    private func runGit(_ arguments: [String], in directory: String) -> GitResult {
         let process = Process()
         process.executableURL = URL(fileURLWithPath: "/usr/bin/git")
         process.arguments = arguments
@@ -131,7 +137,7 @@ struct GitService {
             try process.run()
             process.waitUntilExit()
         } catch {
-            return ("", error.localizedDescription, -1)
+            return GitResult(output: "", error: error.localizedDescription, exitCode: -1)
         }
 
         let outputData = outputPipe.fileHandleForReading.readDataToEndOfFile()
@@ -140,6 +146,6 @@ struct GitService {
         let output = String(data: outputData, encoding: .utf8) ?? ""
         let errorOutput = String(data: errorData, encoding: .utf8) ?? ""
 
-        return (output, errorOutput, process.terminationStatus)
+        return GitResult(output: output, error: errorOutput, exitCode: process.terminationStatus)
     }
 }

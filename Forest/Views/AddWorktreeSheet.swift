@@ -37,7 +37,7 @@ struct AddWorktreeSheet: View {
                 Section {
                     TextField("Worktree Name", text: $worktreeName)
                         .textFieldStyle(.roundedBorder)
-                        .onChange(of: worktreeName) { oldValue, newValue in
+                        .onChange(of: worktreeName) { _, newValue in
                             // Auto-sanitize input
                             let sanitized = newValue.filter { $0.isLetter || $0.isNumber || $0 == "-" || $0 == "_" }
                             if sanitized != newValue {
@@ -72,7 +72,7 @@ struct AddWorktreeSheet: View {
                     if createNewBranch {
                         TextField("New Branch Name", text: $branchName)
                             .textFieldStyle(.roundedBorder)
-                            .onChange(of: branchName) { oldValue, newValue in
+                            .onChange(of: branchName) { _, newValue in
                                 // Mark as manually edited if user changes it from the auto-generated value
                                 let expectedAuto = "feat/\(worktreeName)"
                                 if newValue != expectedAuto && !newValue.isEmpty {
