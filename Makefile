@@ -1,4 +1,4 @@
-CURRENT_VERSION := $(shell git fetch --tags >/dev/null 2>&1; git describe --tags --abbrev=0 2>/dev/null || echo "0.0.0")
+CURRENT_VERSION := $(shell git fetch --tags >/dev/null 2>&1; git tag -l | sort -V | tail -1 | grep . || echo "0.0.0")
 MAJOR := $(shell echo $(CURRENT_VERSION) | cut -d. -f1)
 MINOR := $(shell echo $(CURRENT_VERSION) | cut -d. -f2)
 PATCH := $(shell echo $(CURRENT_VERSION) | cut -d. -f3)
