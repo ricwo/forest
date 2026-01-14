@@ -226,22 +226,9 @@ struct RepositoryDetailView: View {
     }
 
     private func openInTerminal() {
-        let apps = ["iTerm", "Terminal"]
-
-        for app in apps {
-            let process = Process()
-            process.executableURL = URL(fileURLWithPath: "/usr/bin/open")
-            process.arguments = ["-a", app, repository.sourcePath]
-
-            do {
-                try process.run()
-                return
-            } catch {
-                continue
-            }
+        if let error = TerminalService.shared.openTerminal(at: repository.sourcePath) {
+            errorMessage = error
         }
-
-        errorMessage = "Could not open terminal"
     }
 
     private func openInPyCharm() {
@@ -265,50 +252,9 @@ struct RepositoryDetailView: View {
     }
 
     private func runInTerminal(_ script: String) {
-        let apps = ["iTerm", "Terminal"]
-
-        for app in apps {
-            let process = Process()
-            process.executableURL = URL(fileURLWithPath: "/usr/bin/osascript")
-
-            if app == "iTerm" {
-                process.arguments = [
-                    "-e", """
-                        tell application "iTerm"
-                            activate
-                            if (count of windows) = 0 then
-                                create window with default profile
-                            else
-                                tell current window
-                                    create tab with default profile
-                                end tell
-                            end if
-                            tell current session of current window
-                                write text "\(script)"
-                            end tell
-                        end tell
-                    """
-                ]
-            } else {
-                process.arguments = [
-                    "-e", """
-                        tell application "Terminal"
-                            activate
-                            do script "\(script)"
-                        end tell
-                    """
-                ]
-            }
-
-            do {
-                try process.run()
-                return
-            } catch {
-                continue
-            }
+        if let error = TerminalService.shared.runInTerminal(script) {
+            errorMessage = error
         }
-
-        errorMessage = "Could not open terminal"
     }
 }
 

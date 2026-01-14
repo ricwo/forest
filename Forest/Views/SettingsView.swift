@@ -7,9 +7,14 @@ struct SettingsView: View {
     @State private var forestPath: String = SettingsService.shared.forestDirectory.path
     @State private var showingFolderPicker = false
     @State private var selectedEditor: Editor = SettingsService.shared.defaultEditor
+    @State private var selectedTerminal: Terminal = SettingsService.shared.defaultTerminal
     @State private var branchPrefix: String = SettingsService.shared.branchPrefix
     @State private var appearanceMode: AppearanceMode = SettingsService.shared.appearanceMode
     private let originalAppearanceMode: AppearanceMode = SettingsService.shared.appearanceMode
+
+    private var installedTerminals: Set<Terminal> {
+        TerminalService.shared.installedTerminals
+    }
 
     var body: some View {
         let _ = settingsService.appearanceRefreshTrigger  // Trigger re-render on appearance change
@@ -93,6 +98,65 @@ struct SettingsView: View {
                                     .frame(width: 20)
 
                                 Text(selectedEditor.displayName)
+                                    .font(.bodyRegular)
+                                    .foregroundColor(.textPrimary)
+
+                                Spacer()
+
+                                Image(systemName: "chevron.down")
+                                    .font(.system(size: 10, weight: .semibold))
+                                    .foregroundColor(.textTertiary)
+                            }
+                            .padding(.horizontal, Spacing.md)
+                            .padding(.vertical, 10)
+                            .background(Color.bg)
+                            .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 8, style: .continuous)
+                                    .strokeBorder(Color.border, lineWidth: 1)
+                            )
+                        }
+                        .menuStyle(.borderlessButton)
+                    }
+
+                    SubtleDivider()
+
+                    // Default Terminal
+                    VStack(alignment: .leading, spacing: Spacing.sm) {
+                        SectionHeader(title: "Default Terminal")
+
+                        Text("Opens terminals with \u{2318}T")
+                            .font(.caption)
+                            .foregroundColor(.textTertiary)
+
+                        Menu {
+                            ForEach(Terminal.allCases) { terminal in
+                                Button {
+                                    if installedTerminals.contains(terminal) {
+                                        selectedTerminal = terminal
+                                    }
+                                } label: {
+                                    HStack {
+                                        Text(terminal.displayName)
+                                        if !installedTerminals.contains(terminal) {
+                                            Text("(not installed)")
+                                                .foregroundColor(.secondary)
+                                        }
+                                        if selectedTerminal == terminal {
+                                            Image(systemName: "checkmark")
+                                        }
+                                    }
+                                }
+                                .disabled(!installedTerminals.contains(terminal))
+                            }
+                        } label: {
+                            HStack {
+                                Image(systemName: selectedTerminal.icon)
+                                    .font(.system(size: 12))
+                                    .foregroundColor(.accent)
+                                    .frame(width: 20)
+
+                                Text(selectedTerminal.displayName)
                                     .font(.bodyRegular)
                                     .foregroundColor(.textPrimary)
 
@@ -211,6 +275,7 @@ struct SettingsView: View {
     private func saveSettings() {
         SettingsService.shared.forestDirectory = URL(fileURLWithPath: forestPath)
         SettingsService.shared.defaultEditor = selectedEditor
+        SettingsService.shared.defaultTerminal = selectedTerminal
         SettingsService.shared.branchPrefix = branchPrefix
         SettingsService.shared.appearanceMode = appearanceMode
         settingsService.activeAppearance = nil  // Clear preview, saved value now matches
