@@ -7,6 +7,8 @@ struct RepositoryDetailView: View {
     @State private var currentBranch: String?
     @State private var errorMessage: String?
     @State private var claudeSessions: [ClaudeSession] = []
+    @State private var selectedTerminal: Terminal?
+    @State private var claudeCommand: String = ""
 
     // Auto-refresh timer (every 3 seconds)
     private let refreshTimer = Timer.publish(every: 3, on: .main, in: .common).autoconnect()
@@ -30,6 +32,9 @@ struct RepositoryDetailView: View {
                     // Quick actions
                     actionsSection
 
+                    // Project settings
+                    settingsSection
+
                     // Claude sessions
                     if !claudeSessions.isEmpty {
                         claudeSessionsSection
@@ -44,10 +49,14 @@ struct RepositoryDetailView: View {
         .background(Color.bgElevated)
         .onAppear {
             refreshAll()
+            selectedTerminal = repository.defaultTerminal
+            claudeCommand = repository.claudeCommand ?? ""
         }
         .onChange(of: repository.id) {
             errorMessage = nil
             refreshAll()
+            selectedTerminal = repository.defaultTerminal
+            claudeCommand = repository.claudeCommand ?? ""
         }
         .onReceive(refreshTimer) { _ in
             refreshAll()
@@ -210,6 +219,164 @@ struct RepositoryDetailView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 
+    // MARK: - Settings Section
+
+    private var installedTerminals: Set<Terminal> {
+        TerminalService.shared.installedTerminals
+    }
+
+    private var effectiveTerminal: Terminal {
+        selectedTerminal ?? SettingsService.shared.defaultTerminal
+    }
+
+    private var settingsSection: some View {
+        VStack(alignment: .leading, spacing: Spacing.md) {
+            SectionHeader(title: "Project Settings")
+
+            VStack(alignment: .leading, spacing: Spacing.sm) {
+                Text("Default Terminal")
+                    .font(.bodyMedium)
+                    .foregroundColor(.textSecondary)
+
+                Text("Use a different terminal for this project")
+                    .font(.caption)
+                    .foregroundColor(.textTertiary)
+
+                Menu {
+                    // "Use Global Default" option
+                    Button {
+                        selectedTerminal = nil
+                        appState.setDefaultTerminal(nil, for: repository.id)
+                    } label: {
+                        HStack {
+                            Text("Global Default (\(SettingsService.shared.defaultTerminal.displayName))")
+                            if selectedTerminal == nil {
+                                Image(systemName: "checkmark")
+                            }
+                        }
+                    }
+
+                    Divider()
+
+                    // Individual terminal options
+                    ForEach(Terminal.allCases) { terminal in
+                        Button {
+                            if installedTerminals.contains(terminal) {
+                                selectedTerminal = terminal
+                                appState.setDefaultTerminal(terminal, for: repository.id)
+                            }
+                        } label: {
+                            HStack {
+                                Text(terminal.displayName)
+                                if !installedTerminals.contains(terminal) {
+                                    Text("(not installed)")
+                                        .foregroundColor(.secondary)
+                                }
+                                if selectedTerminal == terminal {
+                                    Image(systemName: "checkmark")
+                                }
+                            }
+                        }
+                        .disabled(!installedTerminals.contains(terminal))
+                    }
+                } label: {
+                    HStack {
+                        Image(systemName: effectiveTerminal.icon)
+                            .font(.system(size: 12))
+                            .foregroundColor(.accent)
+                            .frame(width: 20)
+
+                        Text(selectedTerminal?.displayName ?? "Global Default")
+                            .font(.bodyRegular)
+                            .foregroundColor(.textPrimary)
+
+                        Spacer()
+
+                        Image(systemName: "chevron.down")
+                            .font(.system(size: 10, weight: .semibold))
+                            .foregroundColor(.textTertiary)
+                    }
+                    .padding(.horizontal, Spacing.md)
+                    .padding(.vertical, 10)
+                    .background(Color.bg)
+                    .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 8, style: .continuous)
+                            .strokeBorder(Color.border, lineWidth: 1)
+                    )
+                }
+                .menuStyle(.borderlessButton)
+            }
+
+            VStack(alignment: .leading, spacing: Spacing.sm) {
+                Text("Claude Command")
+                    .font(.bodyMedium)
+                    .foregroundColor(.textSecondary)
+
+                Text("Custom command to launch Claude (e.g., claude-work)")
+                    .font(.caption)
+                    .foregroundColor(.textTertiary)
+
+                HStack {
+                    TextField("claude", text: $claudeCommand)
+                        .textFieldStyle(.plain)
+                        .font(.mono)
+                        .foregroundColor(.textPrimary)
+                        .onSubmit {
+                            saveClaudeCommand()
+                        }
+
+                    if !claudeCommand.isEmpty {
+                        Button {
+                            claudeCommand = ""
+                            appState.setClaudeCommand(nil, for: repository.id)
+                        } label: {
+                            Image(systemName: "xmark.circle.fill")
+                                .font(.system(size: 12))
+                                .foregroundColor(.textTertiary)
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
+                .padding(.horizontal, Spacing.md)
+                .padding(.vertical, 10)
+                .background(Color.bg)
+                .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 8, style: .continuous)
+                        .strokeBorder(Color.border, lineWidth: 1)
+                )
+            }
+
+            // Save button - only show when there are unsaved changes
+            if hasUnsavedChanges {
+                Button {
+                    saveClaudeCommand()
+                } label: {
+                    HStack(spacing: Spacing.xs) {
+                        Image(systemName: "checkmark")
+                            .font(.system(size: 9, weight: .semibold))
+                        Text("Save")
+                            .font(.caption)
+                    }
+                    .padding(.horizontal, Spacing.sm)
+                    .padding(.vertical, 5)
+                }
+                .buttonStyle(AccentButtonStyle())
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private var hasUnsavedChanges: Bool {
+        let savedCommand = repository.claudeCommand ?? ""
+        return claudeCommand != savedCommand
+    }
+
+    private func saveClaudeCommand() {
+        appState.setClaudeCommand(claudeCommand.isEmpty ? nil : claudeCommand, for: repository.id)
+    }
+
     // MARK: - Actions
 
     private func refreshAll() {
@@ -226,7 +393,8 @@ struct RepositoryDetailView: View {
     }
 
     private func openInTerminal() {
-        if let error = TerminalService.shared.openTerminal(at: repository.sourcePath) {
+        let terminal = appState.getEffectiveTerminal(for: repository.id)
+        if let error = TerminalService.shared.openTerminal(at: repository.sourcePath, preferredTerminal: terminal) {
             errorMessage = error
         }
     }
@@ -244,15 +412,18 @@ struct RepositoryDetailView: View {
     }
 
     private func continueSession(_ session: ClaudeSession) {
-        runInTerminal("cd '\(repository.sourcePath)' && claude -r '\(session.id)'")
+        let cmd = appState.getEffectiveClaudeCommand(for: repository.id)
+        runInTerminal("cd '\(repository.sourcePath)' && \(cmd) -r '\(session.id)'")
     }
 
     private func startNewClaudeSession() {
-        runInTerminal("cd '\(repository.sourcePath)' && claude")
+        let cmd = appState.getEffectiveClaudeCommand(for: repository.id)
+        runInTerminal("cd '\(repository.sourcePath)' && \(cmd)")
     }
 
     private func runInTerminal(_ script: String) {
-        if let error = TerminalService.shared.runInTerminal(script) {
+        let terminal = appState.getEffectiveTerminal(for: repository.id)
+        if let error = TerminalService.shared.runInTerminal(script, preferredTerminal: terminal) {
             errorMessage = error
         }
     }
