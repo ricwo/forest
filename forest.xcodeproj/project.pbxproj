@@ -3,12 +3,13 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 77;
+	objectVersion = 63;
 	objects = {
 
 /* Begin PBXBuildFile section */
 		08965CFCA18725C30824C95F /* RepositoryDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A74D66DEB7109CDBBC3B6D0 /* RepositoryDetailView.swift */; };
 		0B327FC0E82B76F2B322E4CF /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C72421F4BD0992A51079247 /* AppState.swift */; };
+		1122334455667788990011D0 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEFF112233445566778899B0 /* SettingsView.swift */; };
 		16876CEF408A5FE2BC97324F /* logo_square.jpeg in Resources */ = {isa = PBXBuildFile; fileRef = 4E553497E9EF6F4FE75CE6DF /* logo_square.jpeg */; };
 		22B634A69C621E6BCB39A384 /* claude-logo.pdf in Resources */ = {isa = PBXBuildFile; fileRef = C1DC804A47C5392E7CF4C91F /* claude-logo.pdf */; };
 		27D3FD2D50AE9744F9315F3C /* claude-color.svg in Resources */ = {isa = PBXBuildFile; fileRef = D2861C7181A2E9444E2C6139 /* claude-color.svg */; };
@@ -26,14 +27,18 @@
 		AD05CA3322C86F36BA8912DC /* Worktree.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DDA403B3EBEF8149E07D487 /* Worktree.swift */; };
 		C620092176BD30D4EA8D01E9 /* AddWorktreeSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 871EB9403895E613CFD51BC2 /* AddWorktreeSheet.swift */; };
 		CBD14BB0507032542F766DAC /* pycharm-logo.png in Resources */ = {isa = PBXBuildFile; fileRef = 20AEB84617E55C79D3845A77 /* pycharm-logo.png */; };
+		CCDD112233445566778899C0 /* SettingsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AABB112233445566778899A0 /* SettingsService.swift */; };
 		DF6D0ED97CE157A7891EC3A6 /* GitService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 012CA243328FDE087240D696 /* GitService.swift */; };
 		E01F2E3D4C5B6A7890ABCDEF /* UpdateService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A1B2C3D4E5F6A7B8C9D0E1F /* UpdateService.swift */; };
 		E1084977939613E30CF9A1F2 /* AddRepositorySheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D619C1797E742EB9B68B3C3 /* AddRepositorySheet.swift */; };
 		E492AB99DD92F12A68A16632 /* ForestApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 111211FCD71BDDE591E449B9 /* ForestApp.swift */; };
 		ED5726CD84D2A8272D290C42 /* AppStateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB36F3469A5AE9DAB55097E9 /* AppStateTests.swift */; };
+		EDA49B652F17C2D9002013F8 /* TerminalService.swift in Sources */ = {isa = PBXBuildFile; fileRef = EDA49B642F17C2D9002013F8 /* TerminalService.swift */; };
 		EDB19B920123AE5B3B92133D /* SidebarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F014C97F0739B4F4D14BB631 /* SidebarView.swift */; };
-		CCDD112233445566778899C0 /* SettingsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AABB112233445566778899A0 /* SettingsService.swift */; };
-		1122334455667788990011D0 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEFF112233445566778899B0 /* SettingsView.swift */; };
+		EDDB144E2F17C7A9001D876B /* TerminalService.swift in Sources */ = {isa = PBXBuildFile; fileRef = EDDB144D2F17C7A9001D876B /* TerminalService.swift */; };
+		EDDB14502F17C7BC001D876B /* TerminalService.swift in Sources */ = {isa = PBXBuildFile; fileRef = EDDB144F2F17C7BC001D876B /* TerminalService.swift */; };
+		EDDB14522F17C7E6001D876B /* TerminalService.swift in Sources */ = {isa = PBXBuildFile; fileRef = EDDB14512F17C7E6001D876B /* TerminalService.swift */; };
+		EDDB14542F17C80F001D876B /* TerminalService.swift in Sources */ = {isa = PBXBuildFile; fileRef = EDDB14532F17C80F001D876B /* TerminalService.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -61,19 +66,24 @@
 		7097468D8503CAA98491E975 /* GitServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GitServiceTests.swift; sourceTree = "<group>"; };
 		747309C2BF60AA1A0F4F51BF /* ClaudeSessionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClaudeSessionService.swift; sourceTree = "<group>"; };
 		7C72421F4BD0992A51079247 /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
-		8A1B2C3D4E5F6A7B8C9D0E1F /* UpdateService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateService.swift; sourceTree = "<group>"; };
-		AABB112233445566778899A0 /* SettingsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsService.swift; sourceTree = "<group>"; };
-		EEFF112233445566778899B0 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		871EB9403895E613CFD51BC2 /* AddWorktreeSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddWorktreeSheet.swift; sourceTree = "<group>"; };
+		8A1B2C3D4E5F6A7B8C9D0E1F /* UpdateService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateService.swift; sourceTree = "<group>"; };
 		94CED918E392687BA7538E0F /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		A00B79265921BA64B22F166A /* ClaudeSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClaudeSession.swift; sourceTree = "<group>"; };
+		AABB112233445566778899A0 /* SettingsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsService.swift; sourceTree = "<group>"; };
 		ACF1A0F6F2827AC68B8654EE /* ForestTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ForestTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		B9D81FB74BB1FE6A96941E46 /* ClaudeSessionServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClaudeSessionServiceTests.swift; sourceTree = "<group>"; };
 		C1B016C201B66AB9DC9CDA80 /* WorktreeDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorktreeDetailView.swift; sourceTree = "<group>"; };
 		C1DC804A47C5392E7CF4C91F /* claude-logo.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = "claude-logo.pdf"; sourceTree = "<group>"; };
 		C417DD305BB48E0A6BEC35F3 /* ModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelTests.swift; sourceTree = "<group>"; };
-		D2861C7181A2E9444E2C6139 /* claude-color.svg */ = {isa = PBXFileReference; path = "claude-color.svg"; sourceTree = "<group>"; };
+		D2861C7181A2E9444E2C6139 /* claude-color.svg */ = {isa = PBXFileReference; lastKnownFileType = text; path = "claude-color.svg"; sourceTree = "<group>"; };
 		DB36F3469A5AE9DAB55097E9 /* AppStateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppStateTests.swift; sourceTree = "<group>"; };
+		EDA49B642F17C2D9002013F8 /* TerminalService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalService.swift; sourceTree = "<group>"; };
+		EDDB144D2F17C7A9001D876B /* TerminalService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TerminalService.swift; sourceTree = "<group>"; };
+		EDDB144F2F17C7BC001D876B /* TerminalService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TerminalService.swift; sourceTree = "<group>"; };
+		EDDB14512F17C7E6001D876B /* TerminalService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TerminalService.swift; sourceTree = "<group>"; };
+		EDDB14532F17C80F001D876B /* TerminalService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TerminalService.swift; sourceTree = "<group>"; };
+		EEFF112233445566778899B0 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		F014C97F0739B4F4D14BB631 /* SidebarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SidebarView.swift; sourceTree = "<group>"; };
 		FF4DE49D7EF311238D7627AE /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -89,7 +99,7 @@
 			path = Models;
 			sourceTree = "<group>";
 		};
-		7AC19185FA34C6B859DA4088 /* forest */ = {
+		7AC19185FA34C6B859DA4088 /* Forest */ = {
 			isa = PBXGroup;
 			children = (
 				7C72421F4BD0992A51079247 /* AppState.swift */,
@@ -120,6 +130,11 @@
 			isa = PBXGroup;
 			children = (
 				6D619C1797E742EB9B68B3C3 /* AddRepositorySheet.swift */,
+				EDA49B642F17C2D9002013F8 /* TerminalService.swift */,
+				EDDB144D2F17C7A9001D876B /* TerminalService.swift */,
+				EDDB144F2F17C7BC001D876B /* TerminalService.swift */,
+				EDDB14512F17C7E6001D876B /* TerminalService.swift */,
+				EDDB14532F17C80F001D876B /* TerminalService.swift */,
 				871EB9403895E613CFD51BC2 /* AddWorktreeSheet.swift */,
 				0A74D66DEB7109CDBBC3B6D0 /* RepositoryDetailView.swift */,
 				EEFF112233445566778899B0 /* SettingsView.swift */,
@@ -144,7 +159,7 @@
 		CDAD73899C5530A7C1CFCB3C = {
 			isa = PBXGroup;
 			children = (
-				7AC19185FA34C6B859DA4088 /* forest */,
+				7AC19185FA34C6B859DA4088 /* Forest */,
 				E069CAFD4100582A1443B6E7 /* ForestTests */,
 				FE766F8DAB43532C93A800C0 /* Products */,
 			);
@@ -193,7 +208,7 @@
 		};
 		F9E7E08980B760477910A24D /* forest */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = E4F751EE30B42C4899441140 /* Build configuration list for PBXNativeTarget "Forest" */;
+			buildConfigurationList = E4F751EE30B42C4899441140 /* Build configuration list for PBXNativeTarget "forest" */;
 			buildPhases = (
 				5AE4E7634681FDDDD879EAE6 /* Sources */,
 				185FB3D27F77EC30968BB2A0 /* Resources */,
@@ -233,7 +248,6 @@
 			);
 			mainGroup = CDAD73899C5530A7C1CFCB3C;
 			minimizedProjectReferenceProxies = 1;
-			preferredProjectObjectVersion = 77;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
@@ -277,6 +291,9 @@
 			files = (
 				E1084977939613E30CF9A1F2 /* AddRepositorySheet.swift in Sources */,
 				C620092176BD30D4EA8D01E9 /* AddWorktreeSheet.swift in Sources */,
+				EDDB14522F17C7E6001D876B /* TerminalService.swift in Sources */,
+				EDDB14542F17C80F001D876B /* TerminalService.swift in Sources */,
+				EDDB144E2F17C7A9001D876B /* TerminalService.swift in Sources */,
 				0B327FC0E82B76F2B322E4CF /* AppState.swift in Sources */,
 				634C418EFF76B6489C1659F2 /* ClaudeSession.swift in Sources */,
 				69827C8B97F796FDEB44A856 /* ClaudeSessionService.swift in Sources */,
@@ -287,11 +304,13 @@
 				08965CFCA18725C30824C95F /* RepositoryDetailView.swift in Sources */,
 				EDB19B920123AE5B3B92133D /* SidebarView.swift in Sources */,
 				CCDD112233445566778899C0 /* SettingsService.swift in Sources */,
+				EDDB14502F17C7BC001D876B /* TerminalService.swift in Sources */,
 				1122334455667788990011D0 /* SettingsView.swift in Sources */,
 				524D69A2A026015597C5A73C /* Theme.swift in Sources */,
 				E01F2E3D4C5B6A7890ABCDEF /* UpdateService.swift in Sources */,
 				AD05CA3322C86F36BA8912DC /* Worktree.swift in Sources */,
 				534511245F6008AE2CD909BD /* WorktreeDetailView.swift in Sources */,
+				EDA49B652F17C2D9002013F8 /* TerminalService.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -530,7 +549,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
 		};
-		E4F751EE30B42C4899441140 /* Build configuration list for PBXNativeTarget "Forest" */ = {
+		E4F751EE30B42C4899441140 /* Build configuration list for PBXNativeTarget "forest" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				1D529E872318099E95AAF174 /* Debug */,
