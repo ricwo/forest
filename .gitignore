@@ -1,6 +1,4 @@
 # Xcode
-*.xcodeproj/
-*.xcworkspace/
 xcuserdata/
 DerivedData/
 *.xcscmblueprint
