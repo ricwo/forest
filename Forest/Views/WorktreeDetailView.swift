@@ -254,6 +254,16 @@ struct WorktreeDetailView: View {
                     openInPyCharm()
                 }
                 .keyboardShortcut("p", modifiers: .command)
+
+                ActionButton(
+                    icon: "",
+                    label: "Claude",
+                    shortcut: "⌘N",
+                    customImage: "ClaudeLogo"
+                ) {
+                    startNewClaudeSession()
+                }
+                .keyboardShortcut("n", modifiers: .command)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -386,11 +396,14 @@ struct WorktreeDetailView: View {
     }
 
     private func continueSession(_ session: ClaudeSession) {
-        // Open terminal and run claude -r <session-id>
-        let script = """
-            cd '\(worktree.path)' && claude -r '\(session.id)'
-        """
+        runInTerminal("cd '\(worktree.path)' && claude -r '\(session.id)'")
+    }
 
+    private func startNewClaudeSession() {
+        runInTerminal("cd '\(worktree.path)' && claude")
+    }
+
+    private func runInTerminal(_ script: String) {
         let apps = ["iTerm", "Terminal"]
 
         for app in apps {
@@ -402,8 +415,14 @@ struct WorktreeDetailView: View {
                     "-e", """
                         tell application "iTerm"
                             activate
-                            set newWindow to (create window with default profile)
-                            tell current session of newWindow
+                            if (count of windows) = 0 then
+                                create window with default profile
+                            else
+                                tell current window
+                                    create tab with default profile
+                                end tell
+                            end if
+                            tell current session of current window
                                 write text "\(script)"
                             end tell
                         end tell
