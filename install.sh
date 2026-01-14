@@ -29,7 +29,7 @@ curl -fsSL "$DOWNLOAD_URL" -o "$TMP_DIR/forest.dmg"
 
 # Mount DMG
 echo "==> Mounting disk image..."
-MOUNT_DIR=$(hdiutil attach "$TMP_DIR/forest.dmg" -nobrowse -quiet | tail -1 | cut -f3)
+MOUNT_DIR=$(hdiutil attach "$TMP_DIR/forest.dmg" -nobrowse | grep "/Volumes" | sed 's/.*\(\/Volumes\/.*\)/\1/')
 
 # Remove old version if exists
 if [ -d "$INSTALL_DIR/$APP_NAME" ]; then
