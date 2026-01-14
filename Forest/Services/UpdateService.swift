@@ -47,7 +47,7 @@ final class UpdateService {
         }
     }
 
-    func checkForUpdates() {
+    func checkForUpdates(showAlert: Bool = false) {
         guard let url = URL(string: "https://api.github.com/repos/\(repo)/releases/latest") else { return }
 
         var request = URLRequest(url: url)
@@ -71,11 +71,24 @@ final class UpdateService {
                     }
 
                     self.updateAvailable = self.isNewerVersion(latestVersion, than: self.currentVersion)
+
+                    if showAlert && !self.updateAvailable {
+                        self.showUpToDateAlert()
+                    }
                 }
             } catch {
                 print("Failed to check for updates: \(error)")
             }
         }.resume()
+    }
+
+    private func showUpToDateAlert() {
+        let alert = NSAlert()
+        alert.messageText = "You're up to date!"
+        alert.informativeText = "forest \(currentVersion) is the latest version."
+        alert.alertStyle = .informational
+        alert.addButton(withTitle: "OK")
+        alert.runModal()
     }
 
     func installUpdate() {

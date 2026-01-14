@@ -19,7 +19,7 @@ struct ForestApp: App {
         .commands {
             CommandGroup(after: .appInfo) {
                 Button("Check for Updates...") {
-                    updateService.checkForUpdates()
+                    updateService.checkForUpdates(showAlert: true)
                 }
                 .keyboardShortcut("U", modifiers: [.command])
             }
