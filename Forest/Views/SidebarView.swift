@@ -11,6 +11,8 @@ struct SidebarView: View {
     @State private var repoToRemove: Repository?
     @State private var worktreeToDelete: (worktree: Worktree, repoId: UUID)?
     @State private var deleteError: String?
+    @State private var draggedWorktreeId: UUID?
+    @State private var dropTargetId: UUID?
 
     var body: some View {
         VStack(spacing: 0) {
@@ -141,21 +143,76 @@ struct SidebarView: View {
                 }
             )
 
-            // Worktrees
-            ForEach(appState.activeWorktrees(for: repo)) { worktree in
-                WorktreeListRow(
-                    worktree: worktree,
-                    isSelected: appState.selection == .worktree(worktree.id),
-                    onSelect: {
-                        appState.selection = .worktree(worktree.id)
-                    },
-                    onArchive: {
-                        appState.archiveWorktree(worktree.id, in: repo.id)
-                    },
-                    onDelete: {
-                        worktreeToDelete = (worktree, repo.id)
+            // Worktrees with drag reordering
+            let worktrees = appState.activeWorktrees(for: repo)
+            ForEach(Array(worktrees.enumerated()), id: \.element.id) { index, worktree in
+                VStack(spacing: 0) {
+                    // Drop indicator above this item
+                    if dropTargetId == worktree.id && draggedWorktreeId != worktree.id {
+                        DropIndicator()
                     }
-                )
+
+                    WorktreeListRow(
+                        worktree: worktree,
+                        isSelected: appState.selection == .worktree(worktree.id),
+                        isDragging: draggedWorktreeId == worktree.id,
+                        onSelect: {
+                            appState.selection = .worktree(worktree.id)
+                        },
+                        onArchive: {
+                            appState.archiveWorktree(worktree.id, in: repo.id)
+                        },
+                        onDelete: {
+                            worktreeToDelete = (worktree, repo.id)
+                        }
+                    )
+                    .draggable(worktree.id.uuidString) {
+                        // Drag preview
+                        HStack(spacing: Spacing.sm) {
+                            Image(systemName: "arrow.triangle.branch")
+                                .font(.system(size: 11))
+                                .foregroundColor(.accent)
+                            Text(worktree.name)
+                                .font(.bodyMedium)
+                                .foregroundColor(.textPrimary)
+                        }
+                        .padding(.horizontal, Spacing.md)
+                        .padding(.vertical, Spacing.sm)
+                        .background(Color.bgElevated)
+                        .clipShape(RoundedRectangle(cornerRadius: 6))
+                        .shadow(color: .black.opacity(0.15), radius: 8, y: 4)
+                        .onAppear { draggedWorktreeId = worktree.id }
+                    }
+                    .dropDestination(for: String.self) { items, _ in
+                        dropTargetId = nil
+                        draggedWorktreeId = nil
+
+                        guard let droppedId = items.first,
+                              let droppedUUID = UUID(uuidString: droppedId),
+                              let fromIndex = worktrees.firstIndex(where: { $0.id == droppedUUID }),
+                              let toIndex = worktrees.firstIndex(where: { $0.id == worktree.id }),
+                              fromIndex != toIndex
+                        else { return false }
+
+                        let adjustedTo = fromIndex < toIndex ? toIndex + 1 : toIndex
+                        appState.moveWorktree(in: repo.id, from: IndexSet(integer: fromIndex), to: adjustedTo)
+                        return true
+                    } isTargeted: { isTargeted in
+                        withAnimation(.easeOut(duration: 0.15)) {
+                            dropTargetId = isTargeted ? worktree.id : (dropTargetId == worktree.id ? nil : dropTargetId)
+                        }
+                    }
+
+                    // Drop indicator at the end (after last item)
+                    if index == worktrees.count - 1 && dropTargetId == nil && draggedWorktreeId != nil {
+                        // Show at end when hovering below last item
+                    }
+                }
+            }
+        }
+        .onChange(of: draggedWorktreeId) { _, newValue in
+            if newValue == nil {
+                dropTargetId = nil
             }
         }
     }
@@ -263,9 +320,28 @@ struct RepoHeaderRow: View {
 
 // MARK: - Worktree List Row
 
+// MARK: - Drop Indicator
+
+struct DropIndicator: View {
+    var body: some View {
+        HStack(spacing: 0) {
+            Circle()
+                .fill(Color.accent)
+                .frame(width: 6, height: 6)
+
+            Rectangle()
+                .fill(Color.accent)
+                .frame(height: 2)
+        }
+        .padding(.horizontal, Spacing.lg)
+        .padding(.vertical, 2)
+    }
+}
+
 struct WorktreeListRow: View {
     let worktree: Worktree
     let isSelected: Bool
+    var isDragging: Bool = false
     let onSelect: () -> Void
     let onArchive: () -> Void
     let onDelete: () -> Void
@@ -290,8 +366,13 @@ struct WorktreeListRow: View {
             }
 
             Spacer()
-
-            if isHovering {
+        }
+        .padding(.horizontal, Spacing.md)
+        .padding(.vertical, Spacing.sm)
+        .background(isSelected ? Color.bgSelected : (isHovering ? Color.bgHover : Color.clear))
+        .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+        .overlay(alignment: .trailing) {
+            if isHovering && !isDragging {
                 HStack(spacing: 4) {
                     Button(action: onArchive) {
                         Image(systemName: "archivebox")
@@ -313,19 +394,18 @@ struct WorktreeListRow: View {
                     }
                     .buttonStyle(.plain)
                 }
-                .transition(.opacity.combined(with: .scale(scale: 0.95)))
+                .padding(.trailing, Spacing.md)
+                .transition(.opacity)
             }
         }
-        .padding(.horizontal, Spacing.md)
-        .padding(.vertical, Spacing.sm)
-        .background(isSelected ? Color.bgSelected : (isHovering ? Color.bgHover : Color.clear))
-        .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
         .padding(.horizontal, Spacing.sm)
+        .opacity(isDragging ? 0.4 : 1.0)
         .contentShape(Rectangle())
         .onTapGesture(perform: onSelect)
         .onHover { isHovering = $0 }
         .animation(.easeOut(duration: 0.12), value: isSelected)
         .animation(.easeOut(duration: 0.12), value: isHovering)
+        .animation(.easeOut(duration: 0.15), value: isDragging)
     }
 }
 
@@ -358,7 +438,12 @@ struct ArchivedListRow: View {
             }
 
             Spacer()
-
+        }
+        .padding(.horizontal, Spacing.md)
+        .padding(.vertical, Spacing.sm)
+        .background(isSelected ? Color.bgSelected : (isHovering ? Color.bgHover : Color.clear))
+        .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+        .overlay(alignment: .trailing) {
             if isHovering {
                 HStack(spacing: 4) {
                     Button(action: onRestore) {
@@ -381,13 +466,10 @@ struct ArchivedListRow: View {
                     }
                     .buttonStyle(.plain)
                 }
-                .transition(.opacity.combined(with: .scale(scale: 0.95)))
+                .padding(.trailing, Spacing.md)
+                .transition(.opacity)
             }
         }
-        .padding(.horizontal, Spacing.md)
-        .padding(.vertical, Spacing.sm)
-        .background(isSelected ? Color.bgSelected : (isHovering ? Color.bgHover : Color.clear))
-        .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
         .padding(.horizontal, Spacing.sm)
         .contentShape(Rectangle())
         .onTapGesture(perform: onSelect)

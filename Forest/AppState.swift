@@ -299,11 +299,42 @@ class AppState {
     // MARK: - Helpers
 
     func activeWorktrees(for repo: Repository) -> [Worktree] {
-        repo.worktrees.filter { !$0.isArchived }
+        repo.worktrees
+            .filter { !$0.isArchived }
+            .sorted { w1, w2 in
+                // If both have manual sort order, use that
+                if let o1 = w1.sortOrder, let o2 = w2.sortOrder {
+                    return o1 < o2
+                }
+                // Manual order comes first
+                if w1.sortOrder != nil { return true }
+                if w2.sortOrder != nil { return false }
+                // Otherwise sort by recency (most recent first)
+                return w1.lastModified > w2.lastModified
+            }
     }
 
     func archivedWorktrees(for repo: Repository) -> [Worktree] {
-        repo.worktrees.filter { $0.isArchived }
+        repo.worktrees
+            .filter { $0.isArchived }
+            .sorted { $0.lastModified > $1.lastModified }
+    }
+
+    func moveWorktree(in repoId: UUID, from source: IndexSet, to destination: Int) {
+        guard let repoIndex = repositories.firstIndex(where: { $0.id == repoId }) else { return }
+
+        // Get current sorted active worktrees
+        var sorted = activeWorktrees(for: repositories[repoIndex])
+        sorted.move(fromOffsets: source, toOffset: destination)
+
+        // Update sort orders based on new positions
+        for (index, worktree) in sorted.enumerated() {
+            if let wtIndex = repositories[repoIndex].worktrees.firstIndex(where: { $0.id == worktree.id }) {
+                repositories[repoIndex].worktrees[wtIndex].sortOrder = index
+            }
+        }
+
+        saveConfig()
     }
 
     func hasArchivedWorktrees() -> Bool {
