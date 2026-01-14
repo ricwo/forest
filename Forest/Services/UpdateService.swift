@@ -125,15 +125,20 @@ final class UpdateService {
         // Create update script that runs after app quits
         let script = """
         #!/bin/bash
-        # Mount DMG silently
-        MOUNT_DIR=$(hdiutil attach "\(dmgPath.path)" -nobrowse -quiet | grep "/Volumes" | sed 's/.*\\(\\/Volumes\\/.*\\)/\\1/')
+        # Mount DMG (no -quiet, we need the output to find mount point)
+        MOUNT_DIR=$(hdiutil attach "\(dmgPath.path)" -nobrowse 2>/dev/null | grep "/Volumes" | sed 's/.*\\(\\/Volumes\\/.*\\)/\\1/')
+
+        if [ -z "$MOUNT_DIR" ]; then
+            echo "Failed to mount DMG"
+            exit 1
+        fi
 
         # Replace app
         rm -rf /Applications/forest.app
         cp -R "$MOUNT_DIR/forest.app" /Applications/
 
         # Cleanup
-        hdiutil detach "$MOUNT_DIR" -quiet
+        hdiutil detach "$MOUNT_DIR" -quiet 2>/dev/null
         xattr -cr /Applications/forest.app 2>/dev/null || true
         rm -rf "\(tempDir.path)"
 
