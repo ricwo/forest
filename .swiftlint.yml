@@ -1,0 +1,44 @@
+# SwiftLint configuration for Forest
+
+included:
+  - Forest
+
+excluded:
+  - build
+  - release
+  - DerivedData
+
+# Rules
+disabled_rules:
+  - trailing_whitespace
+  - line_length
+  - function_body_length
+  - type_body_length
+  - file_length
+
+opt_in_rules:
+  - empty_count
+  - empty_string
+  - force_unwrapping
+  - implicitly_unwrapped_optional
+  - modifier_order
+  - overridden_super_call
+  - private_action
+  - private_outlet
+  - yoda_condition
+
+# Configuration
+identifier_name:
+  min_length: 1
+  max_length: 50
+
+type_name:
+  min_length: 2
+  max_length: 50
+
+nesting:
+  type_level: 3
+  function_level: 3
+
+# Paths
+reporter: "xcode"

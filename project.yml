@@ -1,0 +1,26 @@
+name: Forest
+options:
+  bundleIdPrefix: com.forest
+  deploymentTarget:
+    macOS: "14.0"
+  xcodeVersion: "15.0"
+
+targets:
+  Forest:
+    type: application
+    platform: macOS
+    sources:
+      - Forest
+    settings:
+      PRODUCT_BUNDLE_IDENTIFIER: com.forest.app
+      PRODUCT_NAME: Forest
+      GENERATE_INFOPLIST_FILE: YES
+      MARKETING_VERSION: "1.0.0"
+      CURRENT_PROJECT_VERSION: 1
+      SWIFT_VERSION: "5.9"
+      CODE_SIGN_IDENTITY: "-"
+      CODE_SIGN_STYLE: Automatic
+      ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+      ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS: YES
+      ARCHS: arm64
+      ONLY_ACTIVE_ARCH: NO
