@@ -3,7 +3,7 @@ MAJOR := $(shell echo $(CURRENT_VERSION) | cut -d. -f1)
 MINOR := $(shell echo $(CURRENT_VERSION) | cut -d. -f2)
 PATCH := $(shell echo $(CURRENT_VERSION) | cut -d. -f3)
 
-.PHONY: build check lint test release-major release-minor release-patch
+.PHONY: build check lint test build-signed release-major release-minor release-patch
 
 # Development
 build:
@@ -22,6 +22,9 @@ lint:
 
 test:
 	xcodebuild -scheme forest -configuration Debug test -quiet
+
+build-signed:
+	./scripts/build-signed.sh
 
 release-major:
 	@echo "Release $(CURRENT_VERSION) → $(shell echo $$(($(MAJOR)+1))).0.0"
