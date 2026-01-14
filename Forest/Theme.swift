@@ -320,13 +320,7 @@ struct MinimalTextField: View {
 struct SubtleDivider: View {
     var body: some View {
         Rectangle()
-            .fill(
-                LinearGradient(
-                    colors: [Color.border.opacity(0), Color.border, Color.border.opacity(0)],
-                    startPoint: .leading,
-                    endPoint: .trailing
-                )
-            )
+            .fill(Color.border.opacity(0.5))
             .frame(height: 1)
     }
 }

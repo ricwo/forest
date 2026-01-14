@@ -56,6 +56,8 @@ struct SettingsView: View {
                         }
                     }
 
+                    SubtleDivider()
+
                     // Default Editor
                     VStack(alignment: .leading, spacing: Spacing.sm) {
                         SectionHeader(title: "Default Editor")
@@ -105,6 +107,8 @@ struct SettingsView: View {
                         }
                         .menuStyle(.borderlessButton)
                     }
+
+                    SubtleDivider()
 
                     // Branch Prefix
                     VStack(alignment: .leading, spacing: Spacing.sm) {

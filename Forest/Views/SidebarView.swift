@@ -65,14 +65,21 @@ struct SidebarView: View {
             } else {
                 ScrollView {
                     LazyVStack(spacing: Spacing.xs) {
-                        ForEach(appState.repositories) { repo in
+                        ForEach(Array(appState.repositories.enumerated()), id: \.element.id) { index, repo in
                             repoSection(repo)
+
+                            // Add divider between repos (not after last)
+                            if index < appState.repositories.count - 1 {
+                                SubtleDivider()
+                                    .padding(.vertical, Spacing.xs)
+                            }
                         }
 
                         // Archived
                         if appState.hasArchivedWorktrees() {
+                            SubtleDivider()
+                                .padding(.vertical, Spacing.xs)
                             archivedSection
-                                .padding(.top, Spacing.md)
                         }
                     }
                     .padding(.vertical, Spacing.sm)
