@@ -1,40 +1,59 @@
 import SwiftUI
+import AppKit
 
-// MARK: - Colors (Organic Minimalism)
+// MARK: - Adaptive Color Helper
 
 extension Color {
-    // Backgrounds - warm cream tints
-    static let bg = Color(hex: "FAF9F7")
-    static let bgElevated = Color(hex: "FFFFFF")
-    static let bgHover = Color(hex: "F5F4F1")
-    static let bgSelected = Color(hex: "EFEEEB")
-    static let bgSubtle = Color(hex: "F8F7F5")
+    private static var isDarkMode: Bool {
+        SettingsService.shared.isDarkModeActive
+    }
+
+    /// Creates an adaptive color that switches between light and dark variants
+    static func adaptive(light: String, dark: String) -> Color {
+        isDarkMode ? Color(hex: dark) : Color(hex: light)
+    }
+
+    /// Creates an adaptive color from two Color values
+    static func adaptive(light: Color, dark: Color) -> Color {
+        isDarkMode ? dark : light
+    }
+}
+
+// MARK: - Colors (Organic Minimalism with Dark Mode)
+
+extension Color {
+    // Backgrounds - warm cream tints (light) / dark charcoal (dark)
+    static var bg: Color { .adaptive(light: "FAF9F7", dark: "1C1C1E") }
+    static var bgElevated: Color { .adaptive(light: "FFFFFF", dark: "2C2C2E") }
+    static var bgHover: Color { .adaptive(light: "F5F4F1", dark: "3A3A3C") }
+    static var bgSelected: Color { .adaptive(light: "EFEEEB", dark: "48484A") }
+    static var bgSubtle: Color { .adaptive(light: "F8F7F5", dark: "252527") }
 
     // Borders - warm with subtle green tint
-    static let border = Color(hex: "E8E6E1")
-    static let borderSubtle = Color(hex: "F0EEE9")
-    static let borderFocus = Color(hex: "2D6A4F").opacity(0.3)
+    static var border: Color { .adaptive(light: "E8E6E1", dark: "3D3D3F") }
+    static var borderSubtle: Color { .adaptive(light: "F0EEE9", dark: "323234") }
+    static var borderFocus: Color { .adaptive(light: Color(hex: "2D6A4F").opacity(0.3), dark: Color(hex: "52B788").opacity(0.4)) }
 
-    // Text hierarchy - warm charcoal
-    static let textPrimary = Color(hex: "1B1B18")
-    static let textSecondary = Color(hex: "5C5C52")
-    static let textTertiary = Color(hex: "8A8A7A")
-    static let textMuted = Color(hex: "C4C4B8")
+    // Text hierarchy - warm charcoal (light) / light tones (dark)
+    static var textPrimary: Color { .adaptive(light: "1B1B18", dark: "F5F5F5") }
+    static var textSecondary: Color { .adaptive(light: "5C5C52", dark: "A8A8A8") }
+    static var textTertiary: Color { .adaptive(light: "8A8A7A", dark: "7A7A7A") }
+    static var textMuted: Color { .adaptive(light: "C4C4B8", dark: "5A5A5A") }
 
     // Accent - forest green (warmer, more organic)
-    static let accent = Color(hex: "2D6A4F")
-    static let accentLight = Color(hex: "2D6A4F").opacity(0.08)
-    static let accentSoft = Color(hex: "D8F3DC")
+    static var accent: Color { .adaptive(light: "2D6A4F", dark: "52B788") }
+    static var accentLight: Color { .adaptive(light: Color(hex: "2D6A4F").opacity(0.08), dark: Color(hex: "52B788").opacity(0.15)) }
+    static var accentSoft: Color { .adaptive(light: "D8F3DC", dark: "1B4332") }
 
     // Secondary accent - warm amber for highlights
-    static let accentWarm = Color(hex: "B68D40")
-    static let accentWarmLight = Color(hex: "B68D40").opacity(0.1)
+    static var accentWarm: Color { .adaptive(light: "B68D40", dark: "D4A855") }
+    static var accentWarmLight: Color { .adaptive(light: Color(hex: "B68D40").opacity(0.1), dark: Color(hex: "D4A855").opacity(0.15)) }
 
     // Semantic
-    static let destructive = Color(hex: "C1292E")
-    static let destructiveLight = Color(hex: "C1292E").opacity(0.08)
-    static let warning = Color(hex: "CC7722")
-    static let success = Color(hex: "40916C")
+    static var destructive: Color { .adaptive(light: "C1292E", dark: "FF6B6B") }
+    static var destructiveLight: Color { .adaptive(light: Color(hex: "C1292E").opacity(0.08), dark: Color(hex: "FF6B6B").opacity(0.15)) }
+    static var warning: Color { .adaptive(light: "CC7722", dark: "FFB347") }
+    static var success: Color { .adaptive(light: "40916C", dark: "52B788") }
 
     init(hex: String) {
         let hex = hex.trimmingCharacters(in: CharacterSet.alphanumerics.inverted)

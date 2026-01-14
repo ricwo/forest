@@ -1,9 +1,11 @@
 import SwiftUI
+import AppKit
 
 @main
 struct ForestApp: App {
     @State private var appState = AppState()
     @State private var updateService = UpdateService.shared
+    @State private var settingsService = SettingsService.shared
     @State private var showSettings = false
 
     var body: some Scene {
@@ -13,6 +15,7 @@ struct ForestApp: App {
                 .environment(updateService)
                 .onAppear {
                     updateService.startPeriodicChecks()
+                    applyAppearance(settingsService.appearanceMode)
                 }
                 .sheet(isPresented: $showSettings) {
                     SettingsView()
@@ -35,5 +38,25 @@ struct ForestApp: App {
                 .keyboardShortcut(",", modifiers: [.command])
             }
         }
+    }
+
+    private func applyAppearance(_ mode: AppearanceMode) {
+        let appearance: NSAppearance?
+        switch mode {
+        case .system:
+            appearance = nil
+        case .light:
+            appearance = NSAppearance(named: .aqua)
+        case .dark:
+            appearance = NSAppearance(named: .darkAqua)
+        }
+
+        NSApp.appearance = appearance
+        for window in NSApp.windows {
+            window.appearance = appearance
+            window.invalidateShadow()
+            window.displayIfNeeded()
+        }
+        settingsService.appearanceRefreshTrigger += 1
     }
 }
