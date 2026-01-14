@@ -241,6 +241,61 @@ class AppState {
         saveConfig()
     }
 
+    func importExistingWorktrees(for repoId: UUID) throws {
+        guard let repoIndex = repositories.firstIndex(where: { $0.id == repoId }) else { return }
+        let repo = repositories[repoIndex]
+
+        // Get all worktrees from git
+        let allWorktrees = GitService.shared.listWorktrees(repoPath: repo.sourcePath)
+
+        // Filter out the main repo (first entry is usually the main working tree)
+        let externalWorktrees = allWorktrees.filter { $0.path != repo.sourcePath }
+
+        guard !externalWorktrees.isEmpty else { return }
+
+        let repoDir = forestDirectory.appendingPathComponent(repo.name)
+        try? FileManager.default.createDirectory(at: repoDir, withIntermediateDirectories: true)
+
+        for worktreeInfo in externalWorktrees {
+            let oldURL = URL(fileURLWithPath: worktreeInfo.path)
+            let worktreeName = oldURL.lastPathComponent
+            let newURL = repoDir.appendingPathComponent(worktreeName)
+
+            // Skip if already in forest directory
+            if worktreeInfo.path.hasPrefix(repoDir.path) {
+                // Already in forest, just add to our records if not already tracked
+                if !repositories[repoIndex].worktrees.contains(where: { $0.path == worktreeInfo.path }) {
+                    let worktree = Worktree(name: worktreeName, branch: worktreeInfo.branch, path: worktreeInfo.path)
+                    repositories[repoIndex].worktrees.append(worktree)
+                }
+                continue
+            }
+
+            // Skip if destination already exists
+            if FileManager.default.fileExists(atPath: newURL.path) {
+                continue
+            }
+
+            // Move the worktree directory
+            try FileManager.default.moveItem(at: oldURL, to: newURL)
+
+            // Repair git references to point to new location
+            try GitService.shared.repairWorktree(repoPath: repo.sourcePath, worktreePath: newURL.path)
+
+            // Add to our records
+            let worktree = Worktree(name: worktreeName, branch: worktreeInfo.branch, path: newURL.path)
+            repositories[repoIndex].worktrees.append(worktree)
+        }
+
+        saveConfig()
+    }
+
+    func getExistingWorktrees(for sourcePath: String) -> [(path: String, branch: String)] {
+        let allWorktrees = GitService.shared.listWorktrees(repoPath: sourcePath)
+        // Filter out the main repo
+        return allWorktrees.filter { $0.path != sourcePath }
+    }
+
     // MARK: - Helpers
 
     func activeWorktrees(for repo: Repository) -> [Worktree] {

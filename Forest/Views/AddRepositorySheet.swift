@@ -6,6 +6,8 @@ struct AddRepositorySheet: View {
 
     @State private var selectedPath: String = ""
     @State private var errorMessage: String?
+    @State private var existingWorktrees: [(path: String, branch: String)] = []
+    @State private var importWorktrees: Bool = true
 
     var body: some View {
         VStack(spacing: 0) {
@@ -84,6 +86,57 @@ struct AddRepositorySheet: View {
                             .foregroundColor(.destructive)
                     }
                 }
+
+                // Worktree import option
+                if !existingWorktrees.isEmpty {
+                    VStack(alignment: .leading, spacing: Spacing.sm) {
+                        Toggle(isOn: $importWorktrees) {
+                            HStack(spacing: Spacing.sm) {
+                                Image(systemName: "arrow.triangle.branch")
+                                    .font(.system(size: 12))
+                                    .foregroundColor(.accent)
+
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text("Import \(existingWorktrees.count) existing worktree\(existingWorktrees.count == 1 ? "" : "s")")
+                                        .font(.bodyMedium)
+                                        .foregroundColor(.textPrimary)
+
+                                    Text("Move to ~/forest and manage with Forest")
+                                        .font(.caption)
+                                        .foregroundColor(.textTertiary)
+                                }
+                            }
+                        }
+                        .toggleStyle(.checkbox)
+
+                        if importWorktrees {
+                            VStack(alignment: .leading, spacing: Spacing.xs) {
+                                ForEach(existingWorktrees, id: \.path) { worktree in
+                                    HStack(spacing: Spacing.sm) {
+                                        Text(URL(fileURLWithPath: worktree.path).lastPathComponent)
+                                            .font(.mono)
+                                            .foregroundColor(.textSecondary)
+
+                                        Text("·")
+                                            .foregroundColor(.textMuted)
+
+                                        Text(worktree.branch)
+                                            .font(.caption)
+                                            .foregroundColor(.textTertiary)
+                                    }
+                                }
+                            }
+                            .padding(.leading, Spacing.xl)
+                        }
+                    }
+                    .padding(Spacing.md)
+                    .background(Color.bg)
+                    .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 8, style: .continuous)
+                            .strokeBorder(Color.border, lineWidth: 1)
+                    )
+                }
             }
             .padding(.horizontal, Spacing.xl)
 
@@ -119,7 +172,7 @@ struct AddRepositorySheet: View {
             }
             .padding(Spacing.lg)
         }
-        .frame(width: 420, height: 320)
+        .frame(width: 420, height: existingWorktrees.isEmpty ? 320 : 420)
         .background(Color.bgElevated)
     }
 
@@ -133,9 +186,13 @@ struct AddRepositorySheet: View {
         if panel.runModal() == .OK, let url = panel.url {
             selectedPath = url.path
             errorMessage = nil
+            existingWorktrees = []
 
             if !GitService.shared.isGitRepository(at: selectedPath) {
                 errorMessage = "Not a git repository"
+            } else {
+                // Check for existing worktrees
+                existingWorktrees = appState.getExistingWorktrees(for: selectedPath)
             }
         }
     }
@@ -148,6 +205,19 @@ struct AddRepositorySheet: View {
         }
 
         appState.addRepository(from: selectedPath)
+
+        // Import existing worktrees if requested
+        if importWorktrees && !existingWorktrees.isEmpty {
+            if let repo = appState.repositories.first(where: { $0.sourcePath == selectedPath }) {
+                do {
+                    try appState.importExistingWorktrees(for: repo.id)
+                } catch {
+                    // Still dismiss, but worktrees won't be imported
+                    print("Failed to import worktrees: \(error)")
+                }
+            }
+        }
+
         dismiss()
     }
 }
