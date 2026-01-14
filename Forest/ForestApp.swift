@@ -11,10 +11,18 @@ struct ForestApp: App {
                 .environment(appState)
                 .environment(updateService)
                 .onAppear {
-                    updateService.checkForUpdates()
+                    updateService.startPeriodicChecks()
                 }
         }
         .defaultSize(width: 900, height: 600)
         .windowResizability(.contentSize)
+        .commands {
+            CommandGroup(after: .appInfo) {
+                Button("Check for Updates...") {
+                    updateService.checkForUpdates()
+                }
+                .keyboardShortcut("U", modifiers: [.command])
+            }
+        }
     }
 }

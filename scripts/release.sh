@@ -15,6 +15,12 @@ if git rev-parse "$VERSION" >/dev/null 2>&1; then
   exit 1
 fi
 
+echo "Updating version to $VERSION..."
+sed -i '' "s/MARKETING_VERSION = .*/MARKETING_VERSION = $VERSION;/" forest.xcodeproj/project.pbxproj
+git add forest.xcodeproj/project.pbxproj
+git commit -m "Bump version to $VERSION"
+git push
+
 echo "Creating release $VERSION..."
 git tag "$VERSION"
 git push origin "$VERSION"

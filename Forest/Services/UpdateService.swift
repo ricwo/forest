@@ -28,7 +28,8 @@ final class UpdateService {
     static let shared = UpdateService()
 
     private let repo = "ricwo/forest"
-    private let currentVersion: String
+    let currentVersion: String
+    private var timer: Timer?
 
     var updateAvailable: Bool = false
     var latestVersion: String?
@@ -37,6 +38,13 @@ final class UpdateService {
 
     private init() {
         currentVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "0.0.0"
+    }
+
+    func startPeriodicChecks() {
+        checkForUpdates()
+        timer = Timer.scheduledTimer(withTimeInterval: 3600, repeats: true) { [weak self] _ in
+            self?.checkForUpdates()
+        }
     }
 
     func checkForUpdates() {
@@ -58,7 +66,7 @@ final class UpdateService {
                     self.latestVersion = latestVersion
                     self.releaseURL = URL(string: release.htmlUrl)
 
-                    if let asset = release.assets.first(where: { $0.name == "Forest.zip" }) {
+                    if let asset = release.assets.first(where: { $0.name == "forest.dmg" }) {
                         self.downloadURL = URL(string: asset.browserDownloadUrl)
                     }
 
@@ -73,7 +81,7 @@ final class UpdateService {
     func installUpdate() {
         // Run the install script which handles the update
         let script = """
-            curl -fsSL https://raw.githubusercontent.com/\(repo)/main/install.sh | bash && open /Applications/Forest.app
+            curl -fsSL https://raw.githubusercontent.com/\(repo)/main/install.sh | bash && open /Applications/forest.app
         """
 
         let process = Process()
@@ -84,7 +92,7 @@ final class UpdateService {
         let terminalScript = """
             tell application "Terminal"
                 activate
-                do script "curl -fsSL https://raw.githubusercontent.com/\(repo)/main/install.sh | bash && open /Applications/Forest.app"
+                do script "curl -fsSL https://raw.githubusercontent.com/\(repo)/main/install.sh | bash && open /Applications/forest.app"
             end tell
         """
 
