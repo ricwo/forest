@@ -88,10 +88,10 @@ struct ClaudeSessionService {
             // Parse timestamp
             if let timestampStr = record["timestamp"] as? String,
                let timestamp = dateFormatter.date(from: timestampStr) {
-                if firstTimestamp == nil || timestamp < firstTimestamp! {
+                if firstTimestamp.map({ timestamp < $0 }) ?? true {
                     firstTimestamp = timestamp
                 }
-                if lastTimestamp == nil || timestamp > lastTimestamp! {
+                if lastTimestamp.map({ timestamp > $0 }) ?? true {
                     lastTimestamp = timestamp
                 }
             }

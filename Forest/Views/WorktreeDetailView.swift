@@ -498,8 +498,8 @@ struct ActionButton: View {
     let label: String
     let shortcut: String
     let action: () -> Void
-    var customImage: String? = nil
-    var iconColor: Color? = nil
+    var customImage: String?
+    var iconColor: Color?
 
     @State private var isHovering = false
     @State private var isPressed = false

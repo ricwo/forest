@@ -17,7 +17,7 @@ curl -fsSL https://raw.githubusercontent.com/ricwo/forest/main/install.sh | bash
 
 Or download the latest `.dmg` from [Releases](https://github.com/ricwo/forest/releases).
 
-Requires macOS 14+.
+Requires macOS 18+ (Apple Silicon).
 
 ## Development
 

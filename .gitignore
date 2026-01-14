@@ -34,3 +34,4 @@ Pods/
 # Secrets (if any)
 *.env
 *.local
+.env

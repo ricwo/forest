@@ -2,8 +2,11 @@ import SwiftUI
 
 struct ContentView: View {
     @Environment(AppState.self) private var appState
+    @State private var settingsService = SettingsService.shared
 
     var body: some View {
+        let _ = settingsService.appearanceRefreshTrigger  // Trigger re-render on appearance change
+
         HStack(spacing: 0) {
             SidebarView()
                 .frame(width: 240)
