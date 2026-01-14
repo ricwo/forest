@@ -1,34 +1,26 @@
-# Forest
+# forest
 
 A macOS app for managing git worktrees.
 
-## Requirements
+## Features
 
-- macOS 14+
-- Xcode 15+
-- [XcodeGen](https://github.com/yonaskolb/XcodeGen): `brew install xcodegen`
+- Add, switch, and remove git worktrees
+- View Claude Code session history per worktree
+- Open worktrees in your editor (VS Code, Cursor, PyCharm)
+- Auto-updates when new versions are available
 
-## Build
+## Install
 
 ```bash
-./scripts/build.sh
+curl -fsSL https://raw.githubusercontent.com/ricwo/forest/main/install.sh | bash
 ```
 
-Output in `release/`:
-- `Forest.app`
-- `Forest.zip`
-- `Forest.dmg`
+Or download the latest `.dmg` from [Releases](https://github.com/ricwo/forest/releases).
+
+Requires macOS 14+.
 
 ## Development
 
 ```bash
-xcodegen generate
-open Forest.xcodeproj
-```
-
-## Lint
-
-```bash
-brew install swiftlint
-swiftlint
+open forest.xcodeproj
 ```

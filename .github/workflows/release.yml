@@ -16,17 +16,21 @@ jobs:
 
       - name: Build
         run: |
-          xcodebuild -scheme Forest -configuration Release \
+          xcodebuild -scheme forest -configuration Release \
             -archivePath build/Forest.xcarchive archive
 
       - name: Package
         run: |
           mkdir -p release
-          cp -R build/Forest.xcarchive/Products/Applications/Forest.app release/
-          cd release && zip -r Forest.zip Forest.app
+          cp -R build/Forest.xcarchive/Products/Applications/forest.app release/
+          cd release
+          zip -r forest.zip forest.app
+          hdiutil create -volname "forest" -srcfolder forest.app -ov -format UDZO forest.dmg
 
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
-          files: release/Forest.zip
+          files: |
+            release/forest.zip
+            release/forest.dmg
           generate_release_notes: true

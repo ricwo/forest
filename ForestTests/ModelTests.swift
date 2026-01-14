@@ -1,5 +1,5 @@
 import XCTest
-@testable import Forest
+@testable import forest
 
 final class WorktreeTests: XCTestCase {
 

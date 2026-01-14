@@ -40,7 +40,7 @@
 			containerPortal = 7D771737F8B56C73476F7D99 /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = F9E7E08980B760477910A24D;
-			remoteInfo = Forest;
+			remoteInfo = forest;
 		};
 /* End PBXContainerItemProxy section */
 
@@ -50,7 +50,7 @@
 		111211FCD71BDDE591E449B9 /* ForestApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ForestApp.swift; sourceTree = "<group>"; };
 		20AEB84617E55C79D3845A77 /* pycharm-logo.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "pycharm-logo.png"; sourceTree = "<group>"; };
 		283561E3D42732695F0A6855 /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
-		38CB980EE3646EAE2205C5B0 /* Forest.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Forest.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		38CB980EE3646EAE2205C5B0 /* forest.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = forest.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		435B917F9DF7025BFBCD803F /* Repository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Repository.swift; sourceTree = "<group>"; };
 		4E553497E9EF6F4FE75CE6DF /* logo_square.jpeg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = logo_square.jpeg; sourceTree = "<group>"; };
 		69EABA6F603F2C2F878F311A /* forest-logo.jpeg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = "forest-logo.jpeg"; sourceTree = "<group>"; };
@@ -85,7 +85,7 @@
 			path = Models;
 			sourceTree = "<group>";
 		};
-		7AC19185FA34C6B859DA4088 /* Forest */ = {
+		7AC19185FA34C6B859DA4088 /* forest */ = {
 			isa = PBXGroup;
 			children = (
 				7C72421F4BD0992A51079247 /* AppState.swift */,
@@ -138,7 +138,7 @@
 		CDAD73899C5530A7C1CFCB3C = {
 			isa = PBXGroup;
 			children = (
-				7AC19185FA34C6B859DA4088 /* Forest */,
+				7AC19185FA34C6B859DA4088 /* forest */,
 				E069CAFD4100582A1443B6E7 /* ForestTests */,
 				FE766F8DAB43532C93A800C0 /* Products */,
 			);
@@ -158,7 +158,7 @@
 		FE766F8DAB43532C93A800C0 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				38CB980EE3646EAE2205C5B0 /* Forest.app */,
+				38CB980EE3646EAE2205C5B0 /* forest.app */,
 				ACF1A0F6F2827AC68B8654EE /* ForestTests.xctest */,
 			);
 			name = Products;
@@ -185,7 +185,7 @@
 			productReference = ACF1A0F6F2827AC68B8654EE /* ForestTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
-		F9E7E08980B760477910A24D /* Forest */ = {
+		F9E7E08980B760477910A24D /* forest */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = E4F751EE30B42C4899441140 /* Build configuration list for PBXNativeTarget "Forest" */;
 			buildPhases = (
@@ -196,11 +196,11 @@
 			);
 			dependencies = (
 			);
-			name = Forest;
+			name = forest;
 			packageProductDependencies = (
 			);
-			productName = Forest;
-			productReference = 38CB980EE3646EAE2205C5B0 /* Forest.app */;
+			productName = forest;
+			productReference = 38CB980EE3646EAE2205C5B0 /* forest.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -217,7 +217,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 825CFF7EFE6E7F8E3E5CAE18 /* Build configuration list for PBXProject "Forest" */;
+			buildConfigurationList = 825CFF7EFE6E7F8E3E5CAE18 /* Build configuration list for PBXProject "forest" */;
 			compatibilityVersion = "Xcode 14.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -231,7 +231,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				F9E7E08980B760477910A24D /* Forest */,
+				F9E7E08980B760477910A24D /* forest */,
 				B00721D70057F36C3EBE5EEB /* ForestTests */,
 			);
 		};
@@ -292,7 +292,7 @@
 /* Begin PBXTargetDependency section */
 		0C278122CA8FCDB273AD4A49 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = F9E7E08980B760477910A24D /* Forest */;
+			target = F9E7E08980B760477910A24D /* forest */;
 			targetProxy = 2CCC517A88DAEED963931F4B /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
@@ -316,7 +316,7 @@
 				MARKETING_VERSION = 1.0.0;
 				ONLY_ACTIVE_ARCH = NO;
 				PRODUCT_BUNDLE_IDENTIFIER = com.forest.app;
-				PRODUCT_NAME = Forest;
+				PRODUCT_NAME = forest;
 				SDKROOT = macosx;
 				SWIFT_VERSION = 5.9;
 			};
@@ -336,7 +336,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.forest.tests;
 				SDKROOT = macosx;
 				SWIFT_VERSION = 5.9;
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Forest.app/Contents/MacOS/Forest";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/forest.app/Contents/MacOS/forest";
 			};
 			name = Release;
 		};
@@ -354,7 +354,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.forest.tests;
 				SDKROOT = macosx;
 				SWIFT_VERSION = 5.9;
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Forest.app/Contents/MacOS/Forest";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/forest.app/Contents/MacOS/forest";
 			};
 			name = Debug;
 		};
@@ -376,7 +376,7 @@
 				MARKETING_VERSION = 1.0.0;
 				ONLY_ACTIVE_ARCH = NO;
 				PRODUCT_BUNDLE_IDENTIFIER = com.forest.app;
-				PRODUCT_NAME = Forest;
+				PRODUCT_NAME = forest;
 				SDKROOT = macosx;
 				SWIFT_VERSION = 5.9;
 			};
@@ -504,7 +504,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		825CFF7EFE6E7F8E3E5CAE18 /* Build configuration list for PBXProject "Forest" */ = {
+		825CFF7EFE6E7F8E3E5CAE18 /* Build configuration list for PBXProject "forest" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				F4B7DC3B63FCE10F81F2DDA7 /* Debug */,
