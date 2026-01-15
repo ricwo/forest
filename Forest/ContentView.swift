@@ -5,6 +5,7 @@ struct ContentView: View {
     @State private var settingsService = SettingsService.shared
 
     var body: some View {
+        // swiftlint:disable:next redundant_discardable_let
         let _ = settingsService.appearanceRefreshTrigger  // Trigger re-render on appearance change
 
         HStack(spacing: 0) {
@@ -29,7 +30,7 @@ struct ContentView: View {
             } else {
                 EmptyStateView()
             }
-        case .worktree(_):
+        case .worktree:
             if let worktree = appState.selectedWorktree,
                let repoId = appState.selectedWorktreeRepoId {
                 WorktreeDetailView(worktree: worktree, repositoryId: repoId)
