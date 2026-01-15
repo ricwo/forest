@@ -70,13 +70,54 @@ struct WindowConfigurator: NSViewRepresentable {
     var configure: (NSWindow) -> Void
 
     func makeNSView(context: Context) -> NSView {
-        NSView()
+        let view = WindowConfiguratorView()
+        view.configure = configure
+        return view
     }
 
     func updateNSView(_ nsView: NSView, context: Context) {
-        DispatchQueue.main.async {
-            guard let window = nsView.window else { return }
-            configure(window)
+        guard let view = nsView as? WindowConfiguratorView else { return }
+        view.configure = configure
+        view.applyConfiguration()
+    }
+}
+
+class WindowConfiguratorView: NSView {
+    var configure: ((NSWindow) -> Void)?
+
+    override func viewDidMoveToWindow() {
+        super.viewDidMoveToWindow()
+        applyConfiguration()
+
+        // Observe screen changes
+        if let window = window {
+            NotificationCenter.default.addObserver(
+                self,
+                selector: #selector(windowDidChangeScreen),
+                name: NSWindow.didChangeScreenNotification,
+                object: window
+            )
+            NotificationCenter.default.addObserver(
+                self,
+                selector: #selector(windowDidChangeScreen),
+                name: NSWindow.didBecomeMainNotification,
+                object: window
+            )
         }
+    }
+
+    @objc private func windowDidChangeScreen() {
+        applyConfiguration()
+    }
+
+    func applyConfiguration() {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self, let window = self.window else { return }
+            self.configure?(window)
+        }
+    }
+
+    deinit {
+        NotificationCenter.default.removeObserver(self)
     }
 }
