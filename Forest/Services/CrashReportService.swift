@@ -56,7 +56,7 @@ final class CrashReportService {
     }
 
     private init() {
-        let libraryLogs = FileManager.default.urls(for: .libraryDirectory, in: .userDomainMask).first!
+        let libraryLogs = (FileManager.default.urls(for: .libraryDirectory, in: .userDomainMask).first ?? FileManager.default.temporaryDirectory)
             .appendingPathComponent("Logs")
             .appendingPathComponent("Forest")
             .appendingPathComponent("Crashes")

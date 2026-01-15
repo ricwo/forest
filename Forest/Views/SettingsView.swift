@@ -18,6 +18,7 @@ struct SettingsView: View {
     }
 
     var body: some View {
+        // swiftlint:disable:next redundant_discardable_let
         let _ = settingsService.appearanceRefreshTrigger  // Trigger re-render on appearance change
 
         VStack(spacing: 0) {

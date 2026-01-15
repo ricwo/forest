@@ -17,6 +17,7 @@ jobs:
       - name: Build
         run: |
           xcodebuild -scheme forest -configuration Release \
+            -destination 'generic/platform=macOS,arch=arm64' \
             -archivePath build/Forest.xcarchive archive
 
       - name: Package

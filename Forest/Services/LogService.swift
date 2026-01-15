@@ -74,7 +74,7 @@ final class LogService {
     }
 
     private init() {
-        let libraryLogs = FileManager.default.urls(for: .libraryDirectory, in: .userDomainMask).first!
+        let libraryLogs = (FileManager.default.urls(for: .libraryDirectory, in: .userDomainMask).first ?? FileManager.default.temporaryDirectory)
             .appendingPathComponent("Logs")
             .appendingPathComponent("Forest")
 
@@ -113,6 +113,7 @@ final class LogService {
         log(level: .error, message: message, category: category, file: file, function: function, line: line)
     }
 
+    // swiftlint:disable:next function_parameter_count
     private func log(level: LogLevel, message: String, category: String, file: String, function: String, line: Int) {
         let osLogger = logger(for: category)
         let fileName = URL(fileURLWithPath: file).lastPathComponent

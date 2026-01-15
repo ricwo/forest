@@ -12,10 +12,8 @@ final class TerminalService {
 
     func refreshInstalledTerminals() {
         var installed: Set<Terminal> = []
-        for terminal in Terminal.allCases {
-            if isTerminalInstalled(terminal) {
-                installed.insert(terminal)
-            }
+        for terminal in Terminal.allCases where isTerminalInstalled(terminal) {
+            installed.insert(terminal)
         }
         installedTerminals = installed
     }
@@ -45,8 +43,12 @@ final class TerminalService {
         let process = Process()
         process.executableURL = URL(fileURLWithPath: "/usr/bin/open")
         process.arguments = ["-a", terminal.rawValue, path]
-        do { try process.run(); return nil }
-        catch { return "Could not open \(terminal.displayName)" }
+        do {
+            try process.run()
+            return nil
+        } catch {
+            return "Could not open \(terminal.displayName)"
+        }
     }
 
     func runInTerminal(_ script: String, preferredTerminal: Terminal? = nil) -> String? {
@@ -60,15 +62,19 @@ final class TerminalService {
         let process = Process()
         process.executableURL = URL(fileURLWithPath: "/usr/bin/osascript")
         process.arguments = ["-e", getAppleScript(for: terminal, script: script)]
-        do { try process.run(); return nil }
-        catch { return "Could not run script in \(terminal.displayName)" }
+        do {
+            try process.run()
+            return nil
+        } catch {
+            return "Could not run script in \(terminal.displayName)"
+        }
     }
 
     private func getDefaultTerminal() -> Terminal {
         let preferred = SettingsService.shared.defaultTerminal
         if installedTerminals.contains(preferred) { return preferred }
         let order: [Terminal] = [.iterm, .ghostty, .warp, .hyper, .kitty, .wezterm, .alacritty, .terminal]
-        for t in order { if installedTerminals.contains(t) { return t } }
+        for t in order where installedTerminals.contains(t) { return t }
         return .terminal
     }
 
