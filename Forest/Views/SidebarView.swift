@@ -114,8 +114,8 @@ struct SidebarView: View {
         let _ = settingsService.appearanceRefreshTrigger  // Trigger re-render on appearance change
 
         VStack(spacing: 0) {
-            // Header
-            HStack {
+            // Header - aligned with traffic lights
+            HStack(spacing: Spacing.sm) {
                 ForestBranding()
 
                 if updateService.updateAvailable {
@@ -147,9 +147,10 @@ struct SidebarView: View {
                     showingAddRepo = true
                 }
             }
-            .padding(.horizontal, Spacing.lg)
-            .padding(.vertical, Spacing.md)
-            .padding(.top, 28)  // Space for traffic lights
+            .padding(.leading, 78)  // Space for traffic lights
+            .padding(.trailing, Spacing.lg)
+            .padding(.vertical, Spacing.sm)
+            .frame(height: 52)  // Match title bar height
 
             SubtleDivider()
 
