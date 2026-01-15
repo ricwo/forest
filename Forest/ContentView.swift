@@ -33,7 +33,7 @@ struct ContentView: View {
                 for buttonType in buttons {
                     if let button = window.standardWindowButton(buttonType) {
                         var frame = button.frame
-                        frame.origin.y = 16  // Center in 52pt header
+                        frame.origin.y = -12  // Move down to center in header
                         button.setFrameOrigin(frame.origin)
                     }
                 }
