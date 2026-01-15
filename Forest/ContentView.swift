@@ -27,6 +27,16 @@ struct ContentView: View {
                 window.styleMask.insert(.fullSizeContentView)
                 window.isMovableByWindowBackground = true
                 window.toolbar?.showsBaselineSeparator = false
+
+                // Vertically center traffic lights in header (52pt height)
+                let buttons: [NSWindow.ButtonType] = [.closeButton, .miniaturizeButton, .zoomButton]
+                for buttonType in buttons {
+                    if let button = window.standardWindowButton(buttonType) {
+                        var frame = button.frame
+                        frame.origin.y = 16  // Center in 52pt header
+                        button.setFrameOrigin(frame.origin)
+                    }
+                }
             }
         )
     }
