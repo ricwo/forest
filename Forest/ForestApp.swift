@@ -103,6 +103,24 @@ class WindowConfiguratorView: NSView {
                 name: NSWindow.didBecomeMainNotification,
                 object: window
             )
+            NotificationCenter.default.addObserver(
+                self,
+                selector: #selector(windowDidChangeScreen),
+                name: NSWindow.didResignMainNotification,
+                object: window
+            )
+            NotificationCenter.default.addObserver(
+                self,
+                selector: #selector(windowDidChangeScreen),
+                name: NSWindow.didBecomeKeyNotification,
+                object: window
+            )
+            NotificationCenter.default.addObserver(
+                self,
+                selector: #selector(windowDidChangeScreen),
+                name: NSWindow.didResignKeyNotification,
+                object: window
+            )
         }
     }
 
