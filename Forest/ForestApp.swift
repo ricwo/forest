@@ -25,8 +25,7 @@ struct ForestApp: App {
                     SettingsView()
                 }
         }
-        .windowStyle(.hiddenTitleBar)
-        .windowToolbarStyle(.unifiedCompact)
+        .windowToolbarStyle(.unified)
         .defaultSize(width: 900, height: 600)
         .windowResizability(.contentSize)
         .commands {
@@ -76,7 +75,8 @@ struct WindowAccessor: NSViewRepresentable {
             if let window = view.window {
                 window.titlebarAppearsTransparent = true
                 window.titleVisibility = .hidden
-                window.toolbarStyle = .unifiedCompact
+                window.toolbarStyle = .unified
+                window.titlebarSeparatorStyle = .shadow
             }
         }
         return view

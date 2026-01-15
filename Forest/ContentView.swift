@@ -15,6 +15,12 @@ struct ContentView: View {
             detailView
         }
         .navigationSplitViewStyle(.balanced)
+        .toolbar {
+            ToolbarItem(placement: .automatic) {
+                ForestBranding()
+            }
+        }
+        .toolbarTitleDisplayMode(.inline)
         .background(Color.bg)
     }
 

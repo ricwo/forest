@@ -116,8 +116,6 @@ struct SidebarView: View {
         VStack(spacing: 0) {
             // Header
             HStack {
-                ForestBranding()
-
                 if updateService.updateAvailable {
                     Button {
                         showUpdateAlert = true
