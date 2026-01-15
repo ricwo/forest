@@ -8,19 +8,16 @@ struct ContentView: View {
         // swiftlint:disable:next redundant_discardable_let
         let _ = settingsService.appearanceRefreshTrigger  // Trigger re-render on appearance change
 
-        NavigationSplitView {
+        HStack(spacing: 0) {
             SidebarView()
-                .navigationSplitViewColumnWidth(240)
-        } detail: {
+                .frame(width: 240)
+
+            Rectangle()
+                .fill(Color.border)
+                .frame(width: 1)
+
             detailView
         }
-        .navigationSplitViewStyle(.balanced)
-        .toolbar {
-            ToolbarItem(placement: .automatic) {
-                ForestBranding()
-            }
-        }
-        .toolbarTitleDisplayMode(.inline)
         .background(Color.bg)
     }
 

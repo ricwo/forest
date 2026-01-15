@@ -15,7 +15,6 @@ struct ForestApp: App {
             ContentView()
                 .environment(appState)
                 .environment(updateService)
-                .background(WindowAccessor())
                 .onAppear {
                     logService.info("Forest app launched", category: "App")
                     updateService.startPeriodicChecks()
@@ -25,7 +24,6 @@ struct ForestApp: App {
                     SettingsView()
                 }
         }
-        .windowToolbarStyle(.unified)
         .defaultSize(width: 900, height: 600)
         .windowResizability(.contentSize)
         .commands {
@@ -64,23 +62,4 @@ struct ForestApp: App {
         }
         settingsService.appearanceRefreshTrigger += 1
     }
-}
-
-// MARK: - Window Configuration
-
-struct WindowAccessor: NSViewRepresentable {
-    func makeNSView(context: Context) -> NSView {
-        let view = NSView()
-        DispatchQueue.main.async {
-            if let window = view.window {
-                window.titlebarAppearsTransparent = true
-                window.titleVisibility = .hidden
-                window.toolbarStyle = .unified
-                window.titlebarSeparatorStyle = .shadow
-            }
-        }
-        return view
-    }
-
-    func updateNSView(_ nsView: NSView, context: Context) {}
 }
