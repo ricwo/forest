@@ -149,6 +149,7 @@ struct SidebarView: View {
             }
             .padding(.horizontal, Spacing.lg)
             .padding(.vertical, Spacing.md)
+            .padding(.top, 28)  // Space for traffic lights
 
             SubtleDivider()
 

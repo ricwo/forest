@@ -63,3 +63,20 @@ struct ForestApp: App {
         settingsService.appearanceRefreshTrigger += 1
     }
 }
+
+// MARK: - Window Configuration
+
+struct WindowConfigurator: NSViewRepresentable {
+    var configure: (NSWindow) -> Void
+
+    func makeNSView(context: Context) -> NSView {
+        NSView()
+    }
+
+    func updateNSView(_ nsView: NSView, context: Context) {
+        DispatchQueue.main.async {
+            guard let window = nsView.window else { return }
+            configure(window)
+        }
+    }
+}

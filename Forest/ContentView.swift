@@ -18,7 +18,17 @@ struct ContentView: View {
 
             detailView
         }
+        .ignoresSafeArea(edges: .top)
         .background(Color.bg)
+        .background(
+            WindowConfigurator { window in
+                window.titleVisibility = .hidden
+                window.titlebarAppearsTransparent = true
+                window.styleMask.insert(.fullSizeContentView)
+                window.isMovableByWindowBackground = true
+                window.toolbar?.showsBaselineSeparator = false
+            }
+        )
     }
 
     @ViewBuilder
