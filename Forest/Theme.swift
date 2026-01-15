@@ -372,7 +372,7 @@ struct CardContainer<Content: View>: View {
 struct ForestBranding: View {
     var body: some View {
         Text("forest")
-            .font(.custom("Sacramento", size: 20))
+            .font(.custom("Sacramento", size: 24))
             .foregroundColor(.textSecondary)
     }
 }
