@@ -26,6 +26,7 @@ struct ForestApp: App {
         }
         .defaultSize(width: 900, height: 600)
         .windowResizability(.contentSize)
+        .windowStyle(.hiddenTitleBar)
         .commands {
             CommandGroup(after: .appInfo) {
                 Button("Check for Updates...") {
