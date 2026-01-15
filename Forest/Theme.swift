@@ -367,6 +367,16 @@ struct CardContainer<Content: View>: View {
     }
 }
 
+// MARK: - Forest Branding
+
+struct ForestBranding: View {
+    var body: some View {
+        Text("forest")
+            .font(.custom("Sacramento", size: 20))
+            .foregroundColor(.textSecondary)
+    }
+}
+
 // MARK: - Badge
 
 struct Badge: View {

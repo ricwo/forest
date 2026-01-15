@@ -11,10 +11,11 @@ struct ForestApp: App {
     @State private var showSettings = false
 
     var body: some Scene {
-        WindowGroup("forest") {
+        WindowGroup {
             ContentView()
                 .environment(appState)
                 .environment(updateService)
+                .background(WindowAccessor())
                 .onAppear {
                     logService.info("Forest app launched", category: "App")
                     updateService.startPeriodicChecks()
@@ -62,4 +63,34 @@ struct ForestApp: App {
         }
         settingsService.appearanceRefreshTrigger += 1
     }
+}
+
+// MARK: - Window Configuration
+
+struct WindowAccessor: NSViewRepresentable {
+    func makeNSView(context: Context) -> NSView {
+        let view = NSView()
+        DispatchQueue.main.async {
+            if let window = view.window {
+                window.titlebarAppearsTransparent = true
+                window.titleVisibility = .hidden
+                window.styleMask.insert(.fullSizeContentView)
+                window.styleMask.remove(.titled)
+                window.isMovableByWindowBackground = true
+                window.hasShadow = false
+                window.backgroundColor = .clear
+                window.isOpaque = false
+                if let contentView = window.contentView {
+                    contentView.wantsLayer = true
+                    contentView.layer?.cornerRadius = 8
+                    contentView.layer?.masksToBounds = true
+                    contentView.layer?.borderWidth = 0.5
+                    contentView.layer?.borderColor = NSColor(white: 0.7, alpha: 0.5).cgColor
+                }
+            }
+        }
+        return view
+    }
+
+    func updateNSView(_ nsView: NSView, context: Context) {}
 }

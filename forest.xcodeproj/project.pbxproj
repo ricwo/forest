@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		FONT0001234567890ABCDEF01 /* Sacramento-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = FONT0002234567890ABCDEF02 /* Sacramento-Regular.ttf */; };
 		08965CFCA18725C30824C95F /* RepositoryDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A74D66DEB7109CDBBC3B6D0 /* RepositoryDetailView.swift */; };
 		RSET1234567890ABCDEF1234 /* RepositorySettingsSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = RSET5678901234ABCDEF5678 /* RepositorySettingsSheet.swift */; };
 		0B327FC0E82B76F2B322E4CF /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C72421F4BD0992A51079247 /* AppState.swift */; };
@@ -52,6 +53,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		FONT0002234567890ABCDEF02 /* Sacramento-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Sacramento-Regular.ttf"; sourceTree = "<group>"; };
 		012CA243328FDE087240D696 /* GitService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GitService.swift; sourceTree = "<group>"; };
 		0A74D66DEB7109CDBBC3B6D0 /* RepositoryDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RepositoryDetailView.swift; sourceTree = "<group>"; };
 		RSET5678901234ABCDEF5678 /* RepositorySettingsSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RepositorySettingsSheet.swift; sourceTree = "<group>"; };
@@ -144,9 +146,18 @@
 			path = Views;
 			sourceTree = "<group>";
 		};
+		FONT0003234567890ABCDEF03 /* Fonts */ = {
+			isa = PBXGroup;
+			children = (
+				FONT0002234567890ABCDEF02 /* Sacramento-Regular.ttf */,
+			);
+			path = Fonts;
+			sourceTree = "<group>";
+		};
 		C898242F4E96549D5A6A983C /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				FONT0003234567890ABCDEF03 /* Fonts */,
 				D2861C7181A2E9444E2C6139 /* claude-color.svg */,
 				C1DC804A47C5392E7CF4C91F /* claude-logo.pdf */,
 				69EABA6F603F2C2F878F311A /* forest-logo.jpeg */,
@@ -266,6 +277,7 @@
 				27D3FD2D50AE9744F9315F3C /* claude-color.svg in Resources */,
 				22B634A69C621E6BCB39A384 /* claude-logo.pdf in Resources */,
 				48163758A1A68A686E10F7FA /* forest-logo.jpeg in Resources */,
+				FONT0001234567890ABCDEF01 /* Sacramento-Regular.ttf in Resources */,
 				16876CEF408A5FE2BC97324F /* logo_square.jpeg in Resources */,
 				CBD14BB0507032542F766DAC /* pycharm-logo.png in Resources */,
 			);
@@ -337,6 +349,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEAD_CODE_STRIPPING = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Forest/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
@@ -400,6 +413,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEAD_CODE_STRIPPING = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Forest/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
