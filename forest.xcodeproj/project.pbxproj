@@ -10,9 +10,6 @@
 		08965CFCA18725C30824C95F /* RepositoryDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A74D66DEB7109CDBBC3B6D0 /* RepositoryDetailView.swift */; };
 		0B327FC0E82B76F2B322E4CF /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C72421F4BD0992A51079247 /* AppState.swift */; };
 		1122334455667788990011D0 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEFF112233445566778899B0 /* SettingsView.swift */; };
-		A1B2C3D4E5F6A7B8C9D0E1F2 /* LogService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2C3D4E5F6A7B8C9D0E1F2A3 /* LogService.swift */; };
-		C3D4E5F6A7B8C9D0E1F2A3B4 /* CrashReportService.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4E5F6A7B8C9D0E1F2A3B4C5 /* CrashReportService.swift */; };
-		E5F6A7B8C9D0E1F2A3B4C5D6 /* DiagnosticsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6A7B8C9D0E1F2A3B4C5D6E7 /* DiagnosticsView.swift */; };
 		16876CEF408A5FE2BC97324F /* logo_square.jpeg in Resources */ = {isa = PBXBuildFile; fileRef = 4E553497E9EF6F4FE75CE6DF /* logo_square.jpeg */; };
 		22B634A69C621E6BCB39A384 /* claude-logo.pdf in Resources */ = {isa = PBXBuildFile; fileRef = C1DC804A47C5392E7CF4C91F /* claude-logo.pdf */; };
 		27D3FD2D50AE9744F9315F3C /* claude-color.svg in Resources */ = {isa = PBXBuildFile; fileRef = D2861C7181A2E9444E2C6139 /* claude-color.svg */; };
@@ -27,7 +24,9 @@
 		69827C8B97F796FDEB44A856 /* ClaudeSessionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 747309C2BF60AA1A0F4F51BF /* ClaudeSessionService.swift */; };
 		8463D9132F8DD951ACC306F1 /* ModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C417DD305BB48E0A6BEC35F3 /* ModelTests.swift */; };
 		9E9B7B32501571DB79DFB4FD /* GitServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7097468D8503CAA98491E975 /* GitServiceTests.swift */; };
+		A1B2C3D4E5F6A7B8C9D0E1F2 /* LogService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2C3D4E5F6A7B8C9D0E1F2A3 /* LogService.swift */; };
 		AD05CA3322C86F36BA8912DC /* Worktree.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DDA403B3EBEF8149E07D487 /* Worktree.swift */; };
+		C3D4E5F6A7B8C9D0E1F2A3B4 /* CrashReportService.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4E5F6A7B8C9D0E1F2A3B4C5 /* CrashReportService.swift */; };
 		C620092176BD30D4EA8D01E9 /* AddWorktreeSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 871EB9403895E613CFD51BC2 /* AddWorktreeSheet.swift */; };
 		CBD14BB0507032542F766DAC /* pycharm-logo.png in Resources */ = {isa = PBXBuildFile; fileRef = 20AEB84617E55C79D3845A77 /* pycharm-logo.png */; };
 		CCDD112233445566778899C0 /* SettingsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AABB112233445566778899A0 /* SettingsService.swift */; };
@@ -35,6 +34,7 @@
 		E01F2E3D4C5B6A7890ABCDEF /* UpdateService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A1B2C3D4E5F6A7B8C9D0E1F /* UpdateService.swift */; };
 		E1084977939613E30CF9A1F2 /* AddRepositorySheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D619C1797E742EB9B68B3C3 /* AddRepositorySheet.swift */; };
 		E492AB99DD92F12A68A16632 /* ForestApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 111211FCD71BDDE591E449B9 /* ForestApp.swift */; };
+		E5F6A7B8C9D0E1F2A3B4C5D6 /* DiagnosticsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6A7B8C9D0E1F2A3B4C5D6E7 /* DiagnosticsView.swift */; };
 		ED5726CD84D2A8272D290C42 /* AppStateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB36F3469A5AE9DAB55097E9 /* AppStateTests.swift */; };
 		EDA49B652F17C2D9002013F8 /* TerminalService.swift in Sources */ = {isa = PBXBuildFile; fileRef = EDA49B642F17C2D9002013F8 /* TerminalService.swift */; };
 		EDB19B920123AE5B3B92133D /* SidebarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F014C97F0739B4F4D14BB631 /* SidebarView.swift */; };
@@ -53,9 +53,6 @@
 /* Begin PBXFileReference section */
 		012CA243328FDE087240D696 /* GitService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GitService.swift; sourceTree = "<group>"; };
 		0A74D66DEB7109CDBBC3B6D0 /* RepositoryDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RepositoryDetailView.swift; sourceTree = "<group>"; };
-		B2C3D4E5F6A7B8C9D0E1F2A3 /* LogService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogService.swift; sourceTree = "<group>"; };
-		D4E5F6A7B8C9D0E1F2A3B4C5 /* CrashReportService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrashReportService.swift; sourceTree = "<group>"; };
-		F6A7B8C9D0E1F2A3B4C5D6E7 /* DiagnosticsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiagnosticsView.swift; sourceTree = "<group>"; };
 		111211FCD71BDDE591E449B9 /* ForestApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ForestApp.swift; sourceTree = "<group>"; };
 		20AEB84617E55C79D3845A77 /* pycharm-logo.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "pycharm-logo.png"; sourceTree = "<group>"; };
 		283561E3D42732695F0A6855 /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
@@ -74,15 +71,18 @@
 		A00B79265921BA64B22F166A /* ClaudeSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClaudeSession.swift; sourceTree = "<group>"; };
 		AABB112233445566778899A0 /* SettingsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsService.swift; sourceTree = "<group>"; };
 		ACF1A0F6F2827AC68B8654EE /* ForestTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ForestTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		B2C3D4E5F6A7B8C9D0E1F2A3 /* LogService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogService.swift; sourceTree = "<group>"; };
 		B9D81FB74BB1FE6A96941E46 /* ClaudeSessionServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClaudeSessionServiceTests.swift; sourceTree = "<group>"; };
 		C1B016C201B66AB9DC9CDA80 /* WorktreeDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorktreeDetailView.swift; sourceTree = "<group>"; };
 		C1DC804A47C5392E7CF4C91F /* claude-logo.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = "claude-logo.pdf"; sourceTree = "<group>"; };
 		C417DD305BB48E0A6BEC35F3 /* ModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelTests.swift; sourceTree = "<group>"; };
 		D2861C7181A2E9444E2C6139 /* claude-color.svg */ = {isa = PBXFileReference; lastKnownFileType = text; path = "claude-color.svg"; sourceTree = "<group>"; };
+		D4E5F6A7B8C9D0E1F2A3B4C5 /* CrashReportService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrashReportService.swift; sourceTree = "<group>"; };
 		DB36F3469A5AE9DAB55097E9 /* AppStateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppStateTests.swift; sourceTree = "<group>"; };
 		EDA49B642F17C2D9002013F8 /* TerminalService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalService.swift; sourceTree = "<group>"; };
 		EEFF112233445566778899B0 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		F014C97F0739B4F4D14BB631 /* SidebarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SidebarView.swift; sourceTree = "<group>"; };
+		F6A7B8C9D0E1F2A3B4C5D6E7 /* DiagnosticsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiagnosticsView.swift; sourceTree = "<group>"; };
 		FF4DE49D7EF311238D7627AE /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -228,7 +228,7 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = YES;
-				LastUpgradeCheck = 1500;
+				LastUpgradeCheck = 2620;
 				TargetAttributes = {
 					F9E7E08980B760477910A24D = {
 						ProvisioningStyle = Automatic;
@@ -324,13 +324,13 @@
 		1D529E872318099E95AAF174 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = arm64;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -350,6 +350,7 @@
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				COMBINE_HIDPI_IMAGES = YES;
+				DEAD_CODE_STRIPPING = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -368,6 +369,7 @@
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				COMBINE_HIDPI_IMAGES = YES;
+				DEAD_CODE_STRIPPING = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -384,13 +386,13 @@
 		E11A41D35628FB9B67A1688E /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = arm64;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -439,9 +441,11 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
+				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -462,6 +466,7 @@
 				ONLY_ACTIVE_ARCH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
@@ -502,9 +507,11 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
+				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
@@ -518,6 +525,7 @@
 				MTL_FAST_MATH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
 				SWIFT_VERSION = 5.0;
