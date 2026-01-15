@@ -29,7 +29,7 @@ struct ContentView: View {
             } else {
                 EmptyStateView()
             }
-        case .worktree(let worktreeId):
+        case .worktree(_):
             if let worktree = appState.selectedWorktree,
                let repoId = appState.selectedWorktreeRepoId {
                 WorktreeDetailView(worktree: worktree, repositoryId: repoId)

@@ -6,6 +6,8 @@ struct ForestApp: App {
     @State private var appState = AppState()
     @State private var updateService = UpdateService.shared
     @State private var settingsService = SettingsService.shared
+    @State private var logService = LogService.shared
+    @State private var crashService = CrashReportService.shared
     @State private var showSettings = false
 
     var body: some Scene {
@@ -14,6 +16,7 @@ struct ForestApp: App {
                 .environment(appState)
                 .environment(updateService)
                 .onAppear {
+                    logService.info("Forest app launched", category: "App")
                     updateService.startPeriodicChecks()
                     applyAppearance(settingsService.appearanceMode)
                 }
