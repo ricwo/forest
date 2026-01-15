@@ -75,6 +75,7 @@ struct WindowAccessor: NSViewRepresentable {
                 window.titlebarAppearsTransparent = true
                 window.titleVisibility = .hidden
                 window.styleMask.insert(.fullSizeContentView)
+                window.styleMask.insert(.miniaturizable)
                 window.styleMask.remove(.titled)
                 window.isMovableByWindowBackground = true
                 window.hasShadow = false
