@@ -15,7 +15,6 @@ struct ForestApp: App {
             ContentView()
                 .environment(appState)
                 .environment(updateService)
-                .background(WindowAccessor())
                 .onAppear {
                     logService.info("Forest app launched", category: "App")
                     updateService.startPeriodicChecks()
@@ -63,22 +62,4 @@ struct ForestApp: App {
         }
         settingsService.appearanceRefreshTrigger += 1
     }
-}
-
-// MARK: - Window Configuration
-
-struct WindowAccessor: NSViewRepresentable {
-    func makeNSView(context: Context) -> NSView {
-        let view = NSView()
-        DispatchQueue.main.async {
-            if let window = view.window {
-                window.title = "forest"
-                window.titleVisibility = .visible
-                window.toolbarStyle = .unified
-            }
-        }
-        return view
-    }
-
-    func updateNSView(_ nsView: NSView, context: Context) {}
 }
