@@ -116,9 +116,7 @@ struct SidebarView: View {
         VStack(spacing: 0) {
             // Header
             HStack {
-                Text("Worktrees")
-                    .font(.headline)
-                    .foregroundColor(.textPrimary)
+                ForestBranding()
 
                 if updateService.updateAvailable {
                     Button {
