@@ -302,6 +302,40 @@ class AppState {
         return allWorktrees.filter { $0.path != sourcePath }
     }
 
+    // MARK: - Per-Project Settings
+
+    /// Returns the effective terminal for a repository (project setting or global fallback)
+    func getEffectiveTerminal(for repoId: UUID) -> Terminal {
+        if let repo = repositories.first(where: { $0.id == repoId }),
+           let projectTerminal = repo.defaultTerminal {
+            return projectTerminal
+        }
+        return SettingsService.shared.defaultTerminal
+    }
+
+    /// Updates the default terminal for a repository (nil = use global)
+    func setDefaultTerminal(_ terminal: Terminal?, for repoId: UUID) {
+        guard let index = repositories.firstIndex(where: { $0.id == repoId }) else { return }
+        repositories[index].defaultTerminal = terminal
+        saveConfig()
+    }
+
+    /// Returns the effective Claude command for a repository (project setting or "claude")
+    func getEffectiveClaudeCommand(for repoId: UUID) -> String {
+        if let repo = repositories.first(where: { $0.id == repoId }),
+           let command = repo.claudeCommand, !command.isEmpty {
+            return command
+        }
+        return "claude"
+    }
+
+    /// Updates the Claude command for a repository (nil or empty = use default "claude")
+    func setClaudeCommand(_ command: String?, for repoId: UUID) {
+        guard let index = repositories.firstIndex(where: { $0.id == repoId }) else { return }
+        repositories[index].claudeCommand = command
+        saveConfig()
+    }
+
     // MARK: - Helpers
 
     func activeWorktrees(for repo: Repository) -> [Worktree] {

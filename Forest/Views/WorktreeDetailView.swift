@@ -347,7 +347,8 @@ struct WorktreeDetailView: View {
     }
 
     private func openInTerminal() {
-        if let error = TerminalService.shared.openTerminal(at: worktree.path) {
+        let terminal = appState.getEffectiveTerminal(for: repositoryId)
+        if let error = TerminalService.shared.openTerminal(at: worktree.path, preferredTerminal: terminal) {
             errorMessage = error
         }
     }
@@ -392,15 +393,18 @@ struct WorktreeDetailView: View {
     }
 
     private func continueSession(_ session: ClaudeSession) {
-        runInTerminal("cd '\(worktree.path)' && claude -r '\(session.id)'")
+        let cmd = appState.getEffectiveClaudeCommand(for: repositoryId)
+        runInTerminal("cd '\(worktree.path)' && \(cmd) -r '\(session.id)'")
     }
 
     private func startNewClaudeSession() {
-        runInTerminal("cd '\(worktree.path)' && claude")
+        let cmd = appState.getEffectiveClaudeCommand(for: repositoryId)
+        runInTerminal("cd '\(worktree.path)' && \(cmd)")
     }
 
     private func runInTerminal(_ script: String) {
-        if let error = TerminalService.shared.runInTerminal(script) {
+        let terminal = appState.getEffectiveTerminal(for: repositoryId)
+        if let error = TerminalService.shared.runInTerminal(script, preferredTerminal: terminal) {
             errorMessage = error
         }
     }

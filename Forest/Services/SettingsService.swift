@@ -33,7 +33,7 @@ enum AppearanceMode: String, CaseIterable, Identifiable {
     }
 }
 
-enum Editor: String, CaseIterable, Identifiable {
+enum Editor: String, CaseIterable, Identifiable, Codable {
     case vscode
     case cursor
     case pycharm
@@ -73,7 +73,7 @@ enum Editor: String, CaseIterable, Identifiable {
     }
 }
 
-enum Terminal: String, CaseIterable, Identifiable {
+enum Terminal: String, CaseIterable, Identifiable, Codable {
     case iterm = "iTerm"
     case terminal = "Terminal"
     case hyper = "Hyper"

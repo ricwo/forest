@@ -8,6 +8,9 @@ A macOS app for managing git worktrees.
 - View Claude Code session history per worktree
 - Open worktrees in your editor (VS Code, Cursor, PyCharm)
 - Auto-updates when new versions are available
+- **Per-project settings:**
+  - Default terminal per project (iTerm, Terminal, Warp, Ghostty, etc.)
+  - Custom Claude command per project (e.g., `claude-work`, `claude-personal`)
 
 ## Install
 
