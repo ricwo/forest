@@ -25,6 +25,8 @@ struct ForestApp: App {
                     SettingsView()
                 }
         }
+        .windowStyle(.hiddenTitleBar)
+        .windowToolbarStyle(.unifiedCompact)
         .defaultSize(width: 900, height: 600)
         .windowResizability(.contentSize)
         .commands {
@@ -74,18 +76,7 @@ struct WindowAccessor: NSViewRepresentable {
             if let window = view.window {
                 window.titlebarAppearsTransparent = true
                 window.titleVisibility = .hidden
-                window.styleMask.insert(.fullSizeContentView)
-                window.isMovableByWindowBackground = true
-                window.hasShadow = false
-                window.backgroundColor = .clear
-                window.isOpaque = false
-                if let contentView = window.contentView {
-                    contentView.wantsLayer = true
-                    contentView.layer?.cornerRadius = 8
-                    contentView.layer?.masksToBounds = true
-                    contentView.layer?.borderWidth = 0.5
-                    contentView.layer?.borderColor = NSColor(white: 0.7, alpha: 0.5).cgColor
-                }
+                window.toolbarStyle = .unifiedCompact
             }
         }
         return view

@@ -8,16 +8,13 @@ struct ContentView: View {
         // swiftlint:disable:next redundant_discardable_let
         let _ = settingsService.appearanceRefreshTrigger  // Trigger re-render on appearance change
 
-        HStack(spacing: 0) {
+        NavigationSplitView {
             SidebarView()
-                .frame(width: 240)
-
-            Rectangle()
-                .fill(Color.border)
-                .frame(width: 1)
-
+                .navigationSplitViewColumnWidth(240)
+        } detail: {
             detailView
         }
+        .navigationSplitViewStyle(.balanced)
         .background(Color.bg)
     }
 
