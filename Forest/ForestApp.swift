@@ -75,10 +75,6 @@ struct WindowAccessor: NSViewRepresentable {
                 window.titlebarAppearsTransparent = true
                 window.titleVisibility = .hidden
                 window.styleMask.insert(.fullSizeContentView)
-                // Hide traffic light buttons but keep window functionality (CMD+M, etc.)
-                window.standardWindowButton(.closeButton)?.isHidden = true
-                window.standardWindowButton(.miniaturizeButton)?.isHidden = true
-                window.standardWindowButton(.zoomButton)?.isHidden = true
                 window.isMovableByWindowBackground = true
                 window.hasShadow = false
                 window.backgroundColor = .clear
