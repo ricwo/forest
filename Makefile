@@ -7,10 +7,10 @@ PATCH := $(shell echo $(CURRENT_VERSION) | cut -d. -f3)
 
 # Development
 build:
-	xcodebuild -scheme forest -configuration Debug build
+	xcodebuild -scheme forest -configuration Debug -destination 'platform=macOS,arch=arm64' build
 
 check:
-	xcodebuild -scheme forest -configuration Debug build -quiet
+	xcodebuild -scheme forest -configuration Debug -destination 'platform=macOS,arch=arm64' build -quiet
 
 lint:
 	@if command -v swiftlint >/dev/null 2>&1; then \
@@ -21,7 +21,7 @@ lint:
 	fi
 
 test:
-	xcodebuild -scheme forest -configuration Debug test -quiet
+	xcodebuild -scheme forest -configuration Debug -destination 'platform=macOS,arch=arm64' test -quiet
 
 build-signed:
 	./scripts/build-signed.sh
