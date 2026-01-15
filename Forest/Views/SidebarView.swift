@@ -1,7 +1,97 @@
 import SwiftUI
+import UniformTypeIdentifiers
 
 extension UUID: @retroactive Identifiable {
     public var id: UUID { self }
+}
+
+// MARK: - Move Drop Delegates
+
+struct RepoMoveDelegate: DropDelegate {
+    let targetId: UUID
+    let allRepos: [Repository]
+    let onMove: (Int, Int) -> Void
+    let onTargetChange: (UUID?) -> Void
+
+    func dropEntered(info: DropInfo) {
+        withAnimation(.easeOut(duration: 0.12)) {
+            onTargetChange(targetId)
+        }
+    }
+
+    func dropExited(info: DropInfo) {
+        withAnimation(.easeOut(duration: 0.12)) {
+            onTargetChange(nil)
+        }
+    }
+
+    func dropUpdated(info: DropInfo) -> DropProposal? {
+        DropProposal(operation: .move)
+    }
+
+    func performDrop(info: DropInfo) -> Bool {
+        onTargetChange(nil)
+        guard let item = info.itemProviders(for: [UTType.plainText]).first else { return false }
+
+        _ = item.loadObject(ofClass: String.self) { string, _ in
+            guard let droppedId = string,
+                  let droppedUUID = UUID(uuidString: droppedId),
+                  let fromIndex = allRepos.firstIndex(where: { $0.id == droppedUUID }),
+                  let toIndex = allRepos.firstIndex(where: { $0.id == targetId }),
+                  fromIndex != toIndex
+            else { return }
+
+            DispatchQueue.main.async {
+                let adjustedTo = fromIndex < toIndex ? toIndex + 1 : toIndex
+                onMove(fromIndex, adjustedTo)
+            }
+        }
+        return true
+    }
+}
+
+struct WorktreeMoveDelegate: DropDelegate {
+    let targetId: UUID
+    let worktrees: [Worktree]
+    let repoId: UUID
+    let onMove: (Int, Int) -> Void
+    let onTargetChange: ((worktreeId: UUID, repoId: UUID)?) -> Void
+
+    func dropEntered(info: DropInfo) {
+        withAnimation(.easeOut(duration: 0.12)) {
+            onTargetChange((targetId, repoId))
+        }
+    }
+
+    func dropExited(info: DropInfo) {
+        withAnimation(.easeOut(duration: 0.12)) {
+            onTargetChange(nil)
+        }
+    }
+
+    func dropUpdated(info: DropInfo) -> DropProposal? {
+        DropProposal(operation: .move)
+    }
+
+    func performDrop(info: DropInfo) -> Bool {
+        onTargetChange(nil)
+        guard let item = info.itemProviders(for: [UTType.plainText]).first else { return false }
+
+        _ = item.loadObject(ofClass: String.self) { string, _ in
+            guard let droppedId = string,
+                  let droppedUUID = UUID(uuidString: droppedId),
+                  let fromIndex = worktrees.firstIndex(where: { $0.id == droppedUUID }),
+                  let toIndex = worktrees.firstIndex(where: { $0.id == targetId }),
+                  fromIndex != toIndex
+            else { return }
+
+            DispatchQueue.main.async {
+                let adjustedTo = fromIndex < toIndex ? toIndex + 1 : toIndex
+                onMove(fromIndex, adjustedTo)
+            }
+        }
+        return true
+    }
 }
 
 struct SidebarView: View {
@@ -13,8 +103,9 @@ struct SidebarView: View {
     @State private var repoToRemove: Repository?
     @State private var worktreeToDelete: (worktree: Worktree, repoId: UUID)?
     @State private var deleteError: String?
-    @State private var draggedWorktreeId: UUID?
-    @State private var dropTargetId: UUID?
+    @State private var repoDropTargetId: UUID?
+    @State private var worktreeDropTarget: (worktreeId: UUID, repoId: UUID)?
+    @State private var draggingFromRepoId: UUID?
     @State private var showUpdateAlert = false
     @State private var showSettings = false
 
@@ -68,11 +159,18 @@ struct SidebarView: View {
             } else {
                 ScrollView {
                     LazyVStack(spacing: Spacing.xs) {
-                        ForEach(Array(appState.repositories.enumerated()), id: \.element.id) { index, repo in
-                            repoSection(repo)
+                        let sortedRepos = appState.sortedRepositories
+                        ForEach(Array(sortedRepos.enumerated()), id: \.element.id) { index, repo in
+                            VStack(spacing: 0) {
+                                // Drop indicator
+                                if repoDropTargetId == repo.id {
+                                    RepoDropIndicator()
+                                }
+                                repoSection(repo, allRepos: sortedRepos)
+                            }
 
                             // Add divider between repos (not after last)
-                            if index < appState.repositories.count - 1 {
+                            if index < sortedRepos.count - 1 {
                                 SubtleDivider()
                                     .padding(.vertical, Spacing.xs)
                             }
@@ -195,9 +293,9 @@ struct SidebarView: View {
     }
 
     @ViewBuilder
-    private func repoSection(_ repo: Repository) -> some View {
+    private func repoSection(_ repo: Repository, allRepos: [Repository]) -> some View {
         VStack(spacing: 0) {
-            // Repo header (now selectable)
+            // Repo header with drag support
             RepoHeaderRow(
                 repo: repo,
                 isSelected: appState.selection == .repository(repo.id),
@@ -211,20 +309,30 @@ struct SidebarView: View {
                     repoToRemove = repo
                 }
             )
+            .draggable(repo.id.uuidString)
+            .onDrop(of: [UTType.plainText], delegate: RepoMoveDelegate(
+                targetId: repo.id,
+                allRepos: allRepos,
+                onMove: { from, to in
+                    appState.moveRepository(from: IndexSet(integer: from), to: to)
+                },
+                onTargetChange: { repoDropTargetId = $0 }
+            ))
 
             // Worktrees with drag reordering
             let worktrees = appState.activeWorktrees(for: repo)
-            ForEach(Array(worktrees.enumerated()), id: \.element.id) { index, worktree in
+            ForEach(worktrees) { worktree in
                 VStack(spacing: 0) {
-                    // Drop indicator above this item
-                    if dropTargetId == worktree.id && draggedWorktreeId != worktree.id {
-                        DropIndicator()
+                    // Drop indicator (only show within same repo)
+                    if worktreeDropTarget?.worktreeId == worktree.id &&
+                       worktreeDropTarget?.repoId == repo.id &&
+                       draggingFromRepoId == repo.id {
+                        WorktreeDropIndicator()
                     }
-
                     WorktreeListRow(
                         worktree: worktree,
                         isSelected: appState.selection == .worktree(worktree.id),
-                        isDragging: draggedWorktreeId == worktree.id,
+                        isDragging: false,
                         onSelect: {
                             appState.selection = .worktree(worktree.id)
                         },
@@ -236,52 +344,25 @@ struct SidebarView: View {
                         }
                     )
                     .draggable(worktree.id.uuidString) {
-                        // Drag preview
-                        HStack(spacing: Spacing.sm) {
-                            Image(systemName: "arrow.triangle.branch")
-                                .font(.system(size: 11))
-                                .foregroundColor(.accent)
-                            Text(worktree.name)
-                                .font(.bodyMedium)
-                                .foregroundColor(.textPrimary)
-                        }
-                        .padding(.horizontal, Spacing.md)
-                        .padding(.vertical, Spacing.sm)
-                        .background(Color.bgElevated)
-                        .clipShape(RoundedRectangle(cornerRadius: 6))
-                        .shadow(color: .black.opacity(0.15), radius: 8, y: 4)
-                        .onAppear { draggedWorktreeId = worktree.id }
+                        Text(worktree.name)
+                            .padding(.horizontal, Spacing.md)
+                            .padding(.vertical, Spacing.sm)
+                            .background(Color.bgElevated)
+                            .clipShape(RoundedRectangle(cornerRadius: 6))
+                            .shadow(color: .black.opacity(0.15), radius: 8, y: 4)
+                            .onAppear { draggingFromRepoId = repo.id }
+                            .onDisappear { draggingFromRepoId = nil }
                     }
-                    .dropDestination(for: String.self) { items, _ in
-                        dropTargetId = nil
-                        draggedWorktreeId = nil
-
-                        guard let droppedId = items.first,
-                              let droppedUUID = UUID(uuidString: droppedId),
-                              let fromIndex = worktrees.firstIndex(where: { $0.id == droppedUUID }),
-                              let toIndex = worktrees.firstIndex(where: { $0.id == worktree.id }),
-                              fromIndex != toIndex
-                        else { return false }
-
-                        let adjustedTo = fromIndex < toIndex ? toIndex + 1 : toIndex
-                        appState.moveWorktree(in: repo.id, from: IndexSet(integer: fromIndex), to: adjustedTo)
-                        return true
-                    } isTargeted: { isTargeted in
-                        withAnimation(.easeOut(duration: 0.15)) {
-                            dropTargetId = isTargeted ? worktree.id : (dropTargetId == worktree.id ? nil : dropTargetId)
-                        }
-                    }
-
-                    // Drop indicator at the end (after last item)
-                    if index == worktrees.count - 1 && dropTargetId == nil && draggedWorktreeId != nil {
-                        // Show at end when hovering below last item
-                    }
+                    .onDrop(of: [UTType.plainText], delegate: WorktreeMoveDelegate(
+                        targetId: worktree.id,
+                        worktrees: worktrees,
+                        repoId: repo.id,
+                        onMove: { from, to in
+                            appState.moveWorktree(in: repo.id, from: IndexSet(integer: from), to: to)
+                        },
+                        onTargetChange: { worktreeDropTarget = $0 }
+                    ))
                 }
-            }
-        }
-        .onChange(of: draggedWorktreeId) { _, newValue in
-            if newValue == nil {
-                dropTargetId = nil
             }
         }
     }
@@ -399,25 +480,40 @@ struct RepoHeaderRow: View {
     }
 }
 
-// MARK: - Worktree List Row
-
 // MARK: - Drop Indicator
 
-struct DropIndicator: View {
+struct RepoDropIndicator: View {
     var body: some View {
         HStack(spacing: 0) {
             Circle()
-                .fill(Color.accent)
-                .frame(width: 6, height: 6)
-
+                .fill(Color.accent.opacity(0.6))
+                .frame(width: 5, height: 5)
             Rectangle()
-                .fill(Color.accent)
-                .frame(height: 2)
+                .fill(Color.accent.opacity(0.4))
+                .frame(height: 1.5)
         }
-        .padding(.horizontal, Spacing.lg)
+        .padding(.horizontal, Spacing.sm)
         .padding(.vertical, 2)
     }
 }
+
+struct WorktreeDropIndicator: View {
+    var body: some View {
+        HStack(spacing: 0) {
+            Circle()
+                .fill(Color.accent.opacity(0.6))
+                .frame(width: 5, height: 5)
+            Rectangle()
+                .fill(Color.accent.opacity(0.4))
+                .frame(height: 1.5)
+        }
+        .padding(.leading, Spacing.xl)
+        .padding(.trailing, Spacing.sm)
+        .padding(.vertical, 2)
+    }
+}
+
+// MARK: - Worktree List Row
 
 struct WorktreeListRow: View {
     let worktree: Worktree

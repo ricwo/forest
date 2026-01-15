@@ -7,8 +7,7 @@ struct RepositoryDetailView: View {
     @State private var currentBranch: String?
     @State private var errorMessage: String?
     @State private var claudeSessions: [ClaudeSession] = []
-    @State private var selectedTerminal: Terminal?
-    @State private var claudeCommand: String = ""
+    @State private var showSettings = false
 
     // Auto-refresh timer (every 3 seconds)
     private let refreshTimer = Timer.publish(every: 3, on: .main, in: .common).autoconnect()
@@ -32,9 +31,6 @@ struct RepositoryDetailView: View {
                     // Quick actions
                     actionsSection
 
-                    // Project settings
-                    settingsSection
-
                     // Claude sessions
                     if !claudeSessions.isEmpty {
                         claudeSessionsSection
@@ -49,14 +45,13 @@ struct RepositoryDetailView: View {
         .background(Color.bgElevated)
         .onAppear {
             refreshAll()
-            selectedTerminal = repository.defaultTerminal
-            claudeCommand = repository.claudeCommand ?? ""
         }
         .onChange(of: repository.id) {
             errorMessage = nil
             refreshAll()
-            selectedTerminal = repository.defaultTerminal
-            claudeCommand = repository.claudeCommand ?? ""
+        }
+        .sheet(isPresented: $showSettings) {
+            RepositorySettingsSheet(repository: repository)
         }
         .onReceive(refreshTimer) { _ in
             refreshAll()
