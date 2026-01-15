@@ -10,6 +10,9 @@
 		08965CFCA18725C30824C95F /* RepositoryDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A74D66DEB7109CDBBC3B6D0 /* RepositoryDetailView.swift */; };
 		0B327FC0E82B76F2B322E4CF /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C72421F4BD0992A51079247 /* AppState.swift */; };
 		1122334455667788990011D0 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEFF112233445566778899B0 /* SettingsView.swift */; };
+		A1B2C3D4E5F6A7B8C9D0E1F2 /* LogService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2C3D4E5F6A7B8C9D0E1F2A3 /* LogService.swift */; };
+		C3D4E5F6A7B8C9D0E1F2A3B4 /* CrashReportService.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4E5F6A7B8C9D0E1F2A3B4C5 /* CrashReportService.swift */; };
+		E5F6A7B8C9D0E1F2A3B4C5D6 /* DiagnosticsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6A7B8C9D0E1F2A3B4C5D6E7 /* DiagnosticsView.swift */; };
 		16876CEF408A5FE2BC97324F /* logo_square.jpeg in Resources */ = {isa = PBXBuildFile; fileRef = 4E553497E9EF6F4FE75CE6DF /* logo_square.jpeg */; };
 		22B634A69C621E6BCB39A384 /* claude-logo.pdf in Resources */ = {isa = PBXBuildFile; fileRef = C1DC804A47C5392E7CF4C91F /* claude-logo.pdf */; };
 		27D3FD2D50AE9744F9315F3C /* claude-color.svg in Resources */ = {isa = PBXBuildFile; fileRef = D2861C7181A2E9444E2C6139 /* claude-color.svg */; };
@@ -50,6 +53,9 @@
 /* Begin PBXFileReference section */
 		012CA243328FDE087240D696 /* GitService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GitService.swift; sourceTree = "<group>"; };
 		0A74D66DEB7109CDBBC3B6D0 /* RepositoryDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RepositoryDetailView.swift; sourceTree = "<group>"; };
+		B2C3D4E5F6A7B8C9D0E1F2A3 /* LogService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogService.swift; sourceTree = "<group>"; };
+		D4E5F6A7B8C9D0E1F2A3B4C5 /* CrashReportService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrashReportService.swift; sourceTree = "<group>"; };
+		F6A7B8C9D0E1F2A3B4C5D6E7 /* DiagnosticsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiagnosticsView.swift; sourceTree = "<group>"; };
 		111211FCD71BDDE591E449B9 /* ForestApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ForestApp.swift; sourceTree = "<group>"; };
 		20AEB84617E55C79D3845A77 /* pycharm-logo.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "pycharm-logo.png"; sourceTree = "<group>"; };
 		283561E3D42732695F0A6855 /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
@@ -111,7 +117,9 @@
 			isa = PBXGroup;
 			children = (
 				747309C2BF60AA1A0F4F51BF /* ClaudeSessionService.swift */,
+				D4E5F6A7B8C9D0E1F2A3B4C5 /* CrashReportService.swift */,
 				012CA243328FDE087240D696 /* GitService.swift */,
+				B2C3D4E5F6A7B8C9D0E1F2A3 /* LogService.swift */,
 				AABB112233445566778899A0 /* SettingsService.swift */,
 				EDA49B642F17C2D9002013F8 /* TerminalService.swift */,
 				8A1B2C3D4E5F6A7B8C9D0E1F /* UpdateService.swift */,
@@ -124,6 +132,7 @@
 			children = (
 				6D619C1797E742EB9B68B3C3 /* AddRepositorySheet.swift */,
 				871EB9403895E613CFD51BC2 /* AddWorktreeSheet.swift */,
+				F6A7B8C9D0E1F2A3B4C5D6E7 /* DiagnosticsView.swift */,
 				0A74D66DEB7109CDBBC3B6D0 /* RepositoryDetailView.swift */,
 				EEFF112233445566778899B0 /* SettingsView.swift */,
 				F014C97F0739B4F4D14BB631 /* SidebarView.swift */,
@@ -283,8 +292,11 @@
 				634C418EFF76B6489C1659F2 /* ClaudeSession.swift in Sources */,
 				69827C8B97F796FDEB44A856 /* ClaudeSessionService.swift in Sources */,
 				50171DA2C3331052860CDD71 /* ContentView.swift in Sources */,
+				C3D4E5F6A7B8C9D0E1F2A3B4 /* CrashReportService.swift in Sources */,
+				E5F6A7B8C9D0E1F2A3B4C5D6 /* DiagnosticsView.swift in Sources */,
 				E492AB99DD92F12A68A16632 /* ForestApp.swift in Sources */,
 				DF6D0ED97CE157A7891EC3A6 /* GitService.swift in Sources */,
+				A1B2C3D4E5F6A7B8C9D0E1F2 /* LogService.swift in Sources */,
 				3F2129B3F470F0C48C9C7FC1 /* Repository.swift in Sources */,
 				08965CFCA18725C30824C95F /* RepositoryDetailView.swift in Sources */,
 				EDB19B920123AE5B3B92133D /* SidebarView.swift in Sources */,

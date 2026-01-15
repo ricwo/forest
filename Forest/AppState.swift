@@ -343,6 +343,35 @@ class AppState {
         saveConfig()
     }
 
+    func moveRepository(from source: IndexSet, to destination: Int) {
+        // Get current sorted repositories
+        var sorted = sortedRepositories
+        sorted.move(fromOffsets: source, toOffset: destination)
+
+        // Update sort orders based on new positions
+        for (index, repo) in sorted.enumerated() {
+            if let repoIndex = repositories.firstIndex(where: { $0.id == repo.id }) {
+                repositories[repoIndex].sortOrder = index
+            }
+        }
+
+        saveConfig()
+    }
+
+    var sortedRepositories: [Repository] {
+        repositories.sorted { r1, r2 in
+            // If both have manual sort order, use that
+            if let o1 = r1.sortOrder, let o2 = r2.sortOrder {
+                return o1 < o2
+            }
+            // Manual order comes first
+            if r1.sortOrder != nil { return true }
+            if r2.sortOrder != nil { return false }
+            // Otherwise sort alphabetically by name
+            return r1.name.localizedCaseInsensitiveCompare(r2.name) == .orderedAscending
+        }
+    }
+
     func hasArchivedWorktrees() -> Bool {
         repositories.contains { repo in
             repo.worktrees.contains { $0.isArchived }

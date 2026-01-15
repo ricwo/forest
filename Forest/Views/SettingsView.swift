@@ -10,6 +10,7 @@ struct SettingsView: View {
     @State private var selectedTerminal: Terminal = SettingsService.shared.defaultTerminal
     @State private var branchPrefix: String = SettingsService.shared.branchPrefix
     @State private var appearanceMode: AppearanceMode = SettingsService.shared.appearanceMode
+    @State private var showDiagnostics = false
     private let originalAppearanceMode: AppearanceMode = SettingsService.shared.appearanceMode
 
     private var installedTerminals: Set<Terminal> {
@@ -230,6 +231,47 @@ struct SettingsView: View {
                             }
                         }
                     }
+
+                    SubtleDivider()
+
+                    // Diagnostics
+                    VStack(alignment: .leading, spacing: Spacing.sm) {
+                        SectionHeader(title: "Diagnostics")
+
+                        Text("View logs and crash reports")
+                            .font(.caption)
+                            .foregroundColor(.textTertiary)
+
+                        Button {
+                            showDiagnostics = true
+                        } label: {
+                            HStack {
+                                Image(systemName: "stethoscope")
+                                    .font(.system(size: 12))
+                                    .foregroundColor(.accent)
+                                    .frame(width: 20)
+
+                                Text("Open Diagnostics...")
+                                    .font(.bodyRegular)
+                                    .foregroundColor(.textPrimary)
+
+                                Spacer()
+
+                                Image(systemName: "chevron.right")
+                                    .font(.system(size: 10, weight: .semibold))
+                                    .foregroundColor(.textTertiary)
+                            }
+                            .padding(.horizontal, Spacing.md)
+                            .padding(.vertical, 10)
+                            .background(Color.bg)
+                            .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 8, style: .continuous)
+                                    .strokeBorder(Color.border, lineWidth: 1)
+                            )
+                        }
+                        .buttonStyle(.plain)
+                    }
                 }
                 .padding(.horizontal, Spacing.xl)
                 .padding(.vertical, Spacing.sm)
@@ -259,8 +301,11 @@ struct SettingsView: View {
             }
             .padding(Spacing.lg)
         }
-        .frame(width: 450, height: 520)
+        .frame(width: 450, height: 580)
         .background(Color.bgElevated)
+        .sheet(isPresented: $showDiagnostics) {
+            DiagnosticsView()
+        }
         .fileImporter(
             isPresented: $showingFolderPicker,
             allowedContentTypes: [.folder],
