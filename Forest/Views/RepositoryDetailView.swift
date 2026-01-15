@@ -24,7 +24,7 @@ struct RepositoryDetailView: View {
 
             // Content
             ScrollView {
-                VStack(alignment: .leading, spacing: Spacing.xxl) {
+                VStack(alignment: .leading, spacing: Spacing.lg) {
                     // Info section
                     infoSection
 
@@ -93,59 +93,61 @@ struct RepositoryDetailView: View {
             }
 
             Spacer()
+
+            Button {
+                showSettings = true
+            } label: {
+                HStack(spacing: 5) {
+                    Image(systemName: "gearshape.fill")
+                        .font(.system(size: 11))
+                    Text("Settings")
+                        .font(.system(size: 11, weight: .medium))
+                }
+                .foregroundColor(.accent)
+                .padding(.horizontal, 10)
+                .padding(.vertical, 6)
+                .background(Color.accentLight)
+                .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
+            }
+            .buttonStyle(.plain)
+            .help("Project Settings")
         }
     }
 
     // MARK: - Info Section
 
     private var infoSection: some View {
-        VStack(alignment: .leading, spacing: Spacing.md) {
-            SectionHeader(title: "Location")
-
+        VStack(alignment: .leading, spacing: Spacing.xs) {
             HStack(spacing: Spacing.sm) {
-                Image(systemName: "folder")
-                    .font(.system(size: 12))
-                    .foregroundColor(.textTertiary)
-
                 Text(repository.sourcePath)
-                    .font(.mono)
-                    .foregroundColor(.textSecondary)
+                    .font(.monoSmall)
+                    .foregroundColor(.textTertiary)
                     .lineLimit(1)
                     .truncationMode(.middle)
                     .textSelection(.enabled)
-
-                Spacer()
 
                 Button {
                     NSPasteboard.general.clearContents()
                     NSPasteboard.general.setString(repository.sourcePath, forType: .string)
                 } label: {
                     Image(systemName: "doc.on.doc")
-                        .font(.system(size: 11))
-                        .foregroundColor(.textTertiary)
+                        .font(.system(size: 10))
+                        .foregroundColor(.textMuted)
                 }
                 .buttonStyle(.plain)
                 .help("Copy path")
             }
-            .padding(Spacing.md)
-            .background(Color.bg)
-            .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
-            .overlay(
-                RoundedRectangle(cornerRadius: 8, style: .continuous)
-                    .strokeBorder(Color.border, lineWidth: 1)
-            )
 
             if let error = errorMessage {
-                HStack(spacing: Spacing.sm) {
+                HStack(spacing: Spacing.xs) {
                     Image(systemName: "exclamationmark.triangle.fill")
-                        .font(.system(size: 11))
+                        .font(.system(size: 10))
                         .foregroundColor(.destructive)
 
                     Text(error)
                         .font(.caption)
                         .foregroundColor(.destructive)
                 }
-                .padding(.top, Spacing.xs)
             }
         }
     }
@@ -153,45 +155,26 @@ struct RepositoryDetailView: View {
     // MARK: - Actions Section
 
     private var actionsSection: some View {
-        VStack(alignment: .leading, spacing: Spacing.md) {
-            SectionHeader(title: "Open in")
+        VStack(alignment: .leading, spacing: Spacing.sm) {
+            Text("OPEN IN")
+                .font(.system(size: 10, weight: .medium))
+                .foregroundColor(.textMuted)
+                .tracking(0.5)
 
             HStack(spacing: Spacing.sm) {
-                ActionButton(
-                    icon: "folder",
-                    label: "Finder",
-                    shortcut: "⌘O",
-                    action: {
-                        NSWorkspace.shared.selectFile(nil, inFileViewerRootedAtPath: repository.sourcePath)
-                    }
-                )
+                CompactActionButton(icon: "folder", label: "Finder", shortcut: "⌘O") {
+                    NSWorkspace.shared.selectFile(nil, inFileViewerRootedAtPath: repository.sourcePath)
+                }
                 .keyboardShortcut("o", modifiers: .command)
 
-                ActionButton(
-                    icon: "terminal",
-                    label: "Terminal",
-                    shortcut: "⌘T",
-                    action: openInTerminal
-                )
-                .keyboardShortcut("t", modifiers: .command)
+                CompactActionButton(icon: "terminal", label: "Terminal", shortcut: "⌘T", action: openInTerminal)
+                    .keyboardShortcut("t", modifiers: .command)
 
-                ActionButton(
-                    icon: "",
-                    label: "PyCharm",
-                    shortcut: "⌘P",
-                    action: openInPyCharm,
-                    customImage: "PyCharmLogo"
-                )
-                .keyboardShortcut("p", modifiers: .command)
+                CompactActionButton(icon: "", label: "PyCharm", shortcut: "⌘P", customImage: "PyCharmLogo", action: openInPyCharm)
+                    .keyboardShortcut("p", modifiers: .command)
 
-                ActionButton(
-                    icon: "",
-                    label: "Claude",
-                    shortcut: "⌘N",
-                    action: startNewClaudeSession,
-                    customImage: "ClaudeLogo"
-                )
-                .keyboardShortcut("n", modifiers: .command)
+                CompactActionButton(icon: "", label: "Claude", shortcut: "⌘N", customImage: "ClaudeLogo", action: startNewClaudeSession)
+                    .keyboardShortcut("n", modifiers: .command)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -200,176 +183,21 @@ struct RepositoryDetailView: View {
     // MARK: - Claude Sessions Section
 
     private var claudeSessionsSection: some View {
-        VStack(alignment: .leading, spacing: Spacing.md) {
-            SectionHeader(title: "Claude Sessions")
+        VStack(alignment: .leading, spacing: Spacing.sm) {
+            Text("RECENT SESSIONS")
+                .font(.system(size: 10, weight: .medium))
+                .foregroundColor(.textMuted)
+                .tracking(0.5)
 
-            VStack(spacing: Spacing.xs) {
-                ForEach(claudeSessions.prefix(5)) { session in
-                    ClaudeSessionRow(session: session) {
+            VStack(spacing: 2) {
+                ForEach(claudeSessions.prefix(3)) { session in
+                    CompactSessionRow(session: session) {
                         continueSession(session)
                     }
                 }
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-    }
-
-    // MARK: - Settings Section
-
-    private var installedTerminals: Set<Terminal> {
-        TerminalService.shared.installedTerminals
-    }
-
-    private var effectiveTerminal: Terminal {
-        selectedTerminal ?? SettingsService.shared.defaultTerminal
-    }
-
-    private var settingsSection: some View {
-        VStack(alignment: .leading, spacing: Spacing.md) {
-            SectionHeader(title: "Project Settings")
-
-            VStack(alignment: .leading, spacing: Spacing.sm) {
-                Text("Default Terminal")
-                    .font(.bodyMedium)
-                    .foregroundColor(.textSecondary)
-
-                Text("Use a different terminal for this project")
-                    .font(.caption)
-                    .foregroundColor(.textTertiary)
-
-                Menu {
-                    // "Use Global Default" option
-                    Button {
-                        selectedTerminal = nil
-                        appState.setDefaultTerminal(nil, for: repository.id)
-                    } label: {
-                        HStack {
-                            Text("Global Default (\(SettingsService.shared.defaultTerminal.displayName))")
-                            if selectedTerminal == nil {
-                                Image(systemName: "checkmark")
-                            }
-                        }
-                    }
-
-                    Divider()
-
-                    // Individual terminal options
-                    ForEach(Terminal.allCases) { terminal in
-                        Button {
-                            if installedTerminals.contains(terminal) {
-                                selectedTerminal = terminal
-                                appState.setDefaultTerminal(terminal, for: repository.id)
-                            }
-                        } label: {
-                            HStack {
-                                Text(terminal.displayName)
-                                if !installedTerminals.contains(terminal) {
-                                    Text("(not installed)")
-                                        .foregroundColor(.secondary)
-                                }
-                                if selectedTerminal == terminal {
-                                    Image(systemName: "checkmark")
-                                }
-                            }
-                        }
-                        .disabled(!installedTerminals.contains(terminal))
-                    }
-                } label: {
-                    HStack {
-                        Image(systemName: effectiveTerminal.icon)
-                            .font(.system(size: 12))
-                            .foregroundColor(.accent)
-                            .frame(width: 20)
-
-                        Text(selectedTerminal?.displayName ?? "Global Default")
-                            .font(.bodyRegular)
-                            .foregroundColor(.textPrimary)
-
-                        Spacer()
-
-                        Image(systemName: "chevron.down")
-                            .font(.system(size: 10, weight: .semibold))
-                            .foregroundColor(.textTertiary)
-                    }
-                    .padding(.horizontal, Spacing.md)
-                    .padding(.vertical, 10)
-                    .background(Color.bg)
-                    .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 8, style: .continuous)
-                            .strokeBorder(Color.border, lineWidth: 1)
-                    )
-                }
-                .menuStyle(.borderlessButton)
-            }
-
-            VStack(alignment: .leading, spacing: Spacing.sm) {
-                Text("Claude Command")
-                    .font(.bodyMedium)
-                    .foregroundColor(.textSecondary)
-
-                Text("Custom command to launch Claude (e.g., claude-work)")
-                    .font(.caption)
-                    .foregroundColor(.textTertiary)
-
-                HStack {
-                    TextField("claude", text: $claudeCommand)
-                        .textFieldStyle(.plain)
-                        .font(.mono)
-                        .foregroundColor(.textPrimary)
-                        .onSubmit {
-                            saveClaudeCommand()
-                        }
-
-                    if !claudeCommand.isEmpty {
-                        Button {
-                            claudeCommand = ""
-                            appState.setClaudeCommand(nil, for: repository.id)
-                        } label: {
-                            Image(systemName: "xmark.circle.fill")
-                                .font(.system(size: 12))
-                                .foregroundColor(.textTertiary)
-                        }
-                        .buttonStyle(.plain)
-                    }
-                }
-                .padding(.horizontal, Spacing.md)
-                .padding(.vertical, 10)
-                .background(Color.bg)
-                .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 8, style: .continuous)
-                        .strokeBorder(Color.border, lineWidth: 1)
-                )
-            }
-
-            // Save button - only show when there are unsaved changes
-            if hasUnsavedChanges {
-                Button {
-                    saveClaudeCommand()
-                } label: {
-                    HStack(spacing: Spacing.xs) {
-                        Image(systemName: "checkmark")
-                            .font(.system(size: 9, weight: .semibold))
-                        Text("Save")
-                            .font(.caption)
-                    }
-                    .padding(.horizontal, Spacing.sm)
-                    .padding(.vertical, 5)
-                }
-                .buttonStyle(AccentButtonStyle())
-            }
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-    }
-
-    private var hasUnsavedChanges: Bool {
-        let savedCommand = repository.claudeCommand ?? ""
-        return claudeCommand != savedCommand
-    }
-
-    private func saveClaudeCommand() {
-        appState.setClaudeCommand(claudeCommand.isEmpty ? nil : claudeCommand, for: repository.id)
     }
 
     // MARK: - Actions
@@ -421,6 +249,116 @@ struct RepositoryDetailView: View {
         if let error = TerminalService.shared.runInTerminal(script, preferredTerminal: terminal) {
             errorMessage = error
         }
+    }
+}
+
+// MARK: - Compact Action Button
+
+private struct CompactActionButton: View {
+    let icon: String
+    let label: String
+    let shortcut: String
+    var customImage: String?
+    let action: () -> Void
+
+    @State private var isHovering = false
+
+    var body: some View {
+        Button(action: action) {
+            VStack(spacing: 4) {
+                ZStack {
+                    RoundedRectangle(cornerRadius: 8, style: .continuous)
+                        .fill(isHovering ? Color.bgHover : Color.bgSubtle)
+                        .frame(width: 36, height: 36)
+
+                    if let imageName = customImage {
+                        Image(imageName)
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
+                            .frame(width: 16, height: 16)
+                    } else {
+                        Image(systemName: icon)
+                            .font(.system(size: 14))
+                            .foregroundColor(isHovering ? .accent : .textSecondary)
+                    }
+                }
+
+                Text(label)
+                    .font(.system(size: 10))
+                    .foregroundColor(isHovering ? .textPrimary : .textTertiary)
+            }
+            .frame(width: 56)
+        }
+        .buttonStyle(.plain)
+        .onHover { isHovering = $0 }
+    }
+}
+
+// MARK: - Compact Session Row
+
+private struct CompactSessionRow: View {
+    let session: ClaudeSession
+    let onContinue: () -> Void
+
+    @State private var isHovering = false
+
+    var body: some View {
+        Button(action: onContinue) {
+            HStack(spacing: Spacing.sm) {
+                Image("ClaudeLogo")
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .frame(width: 16, height: 16)
+                    .opacity(0.8)
+
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(session.title)
+                        .font(.caption)
+                        .foregroundColor(.textPrimary)
+                        .lineLimit(1)
+                        .truncationMode(.tail)
+
+                    HStack(spacing: Spacing.xs) {
+                        Text(session.relativeTime)
+                            .font(.system(size: 10))
+                            .foregroundColor(.textTertiary)
+
+                        Circle()
+                            .fill(Color.textMuted)
+                            .frame(width: 2, height: 2)
+
+                        Text("\(session.messageCount) msgs")
+                            .font(.system(size: 10))
+                            .foregroundColor(.textTertiary)
+
+                        if let branch = session.primaryBranch {
+                            Circle()
+                                .fill(Color.textMuted)
+                                .frame(width: 2, height: 2)
+
+                            Text(branch)
+                                .font(.monoSmall)
+                                .foregroundColor(.textTertiary)
+                                .lineLimit(1)
+                        }
+                    }
+                }
+
+                Spacer()
+
+                Image(systemName: "arrow.right")
+                    .font(.system(size: 10))
+                    .foregroundColor(isHovering ? .accent : .textMuted)
+            }
+            .padding(.horizontal, Spacing.sm)
+            .padding(.vertical, Spacing.sm)
+            .background(
+                RoundedRectangle(cornerRadius: 8, style: .continuous)
+                    .fill(isHovering ? Color.bgHover : Color.bgSubtle)
+            )
+        }
+        .buttonStyle(.plain)
+        .onHover { isHovering = $0 }
     }
 }
 

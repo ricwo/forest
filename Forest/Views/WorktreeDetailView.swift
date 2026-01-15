@@ -30,7 +30,7 @@ struct WorktreeDetailView: View {
 
             // Content
             ScrollView {
-                VStack(alignment: .leading, spacing: Spacing.xxl) {
+                VStack(alignment: .leading, spacing: Spacing.lg) {
                     // Info section
                     infoSection
 
@@ -169,53 +169,37 @@ struct WorktreeDetailView: View {
     // MARK: - Info Section
 
     private var infoSection: some View {
-        VStack(alignment: .leading, spacing: Spacing.md) {
-            SectionHeader(title: "Location")
-
+        VStack(alignment: .leading, spacing: Spacing.xs) {
             HStack(spacing: Spacing.sm) {
-                Image(systemName: "folder")
-                    .font(.system(size: 12))
-                    .foregroundColor(.textTertiary)
-
                 Text(worktree.path)
-                    .font(.mono)
-                    .foregroundColor(.textSecondary)
+                    .font(.monoSmall)
+                    .foregroundColor(.textTertiary)
                     .lineLimit(1)
                     .truncationMode(.middle)
                     .textSelection(.enabled)
-
-                Spacer()
 
                 Button {
                     NSPasteboard.general.clearContents()
                     NSPasteboard.general.setString(worktree.path, forType: .string)
                 } label: {
                     Image(systemName: "doc.on.doc")
-                        .font(.system(size: 11))
-                        .foregroundColor(.textTertiary)
+                        .font(.system(size: 10))
+                        .foregroundColor(.textMuted)
                 }
                 .buttonStyle(.plain)
                 .help("Copy path")
             }
-            .padding(Spacing.md)
-            .background(Color.bg)
-            .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
-            .overlay(
-                RoundedRectangle(cornerRadius: 8, style: .continuous)
-                    .strokeBorder(Color.border, lineWidth: 1)
-            )
 
             if let error = errorMessage {
-                HStack(spacing: Spacing.sm) {
+                HStack(spacing: Spacing.xs) {
                     Image(systemName: "exclamationmark.triangle.fill")
-                        .font(.system(size: 11))
+                        .font(.system(size: 10))
                         .foregroundColor(.destructive)
 
                     Text(error)
                         .font(.caption)
                         .foregroundColor(.destructive)
                 }
-                .padding(.top, Spacing.xs)
             }
         }
     }
@@ -223,11 +207,14 @@ struct WorktreeDetailView: View {
     // MARK: - Actions Section
 
     private var actionsSection: some View {
-        VStack(alignment: .leading, spacing: Spacing.md) {
-            SectionHeader(title: "Open in")
+        VStack(alignment: .leading, spacing: Spacing.sm) {
+            Text("OPEN IN")
+                .font(.system(size: 10, weight: .medium))
+                .foregroundColor(.textMuted)
+                .tracking(0.5)
 
             HStack(spacing: Spacing.sm) {
-                ActionButton(
+                CompactActionButton(
                     icon: SettingsService.shared.defaultEditor.icon,
                     label: SettingsService.shared.defaultEditor.displayName,
                     shortcut: "⌘E",
@@ -235,32 +222,16 @@ struct WorktreeDetailView: View {
                 )
                 .keyboardShortcut("e", modifiers: .command)
 
-                ActionButton(
-                    icon: "folder",
-                    label: "Finder",
-                    shortcut: "⌘O",
-                    action: {
-                        NSWorkspace.shared.selectFile(nil, inFileViewerRootedAtPath: worktree.path)
-                    }
-                )
+                CompactActionButton(icon: "folder", label: "Finder", shortcut: "⌘O") {
+                    NSWorkspace.shared.selectFile(nil, inFileViewerRootedAtPath: worktree.path)
+                }
                 .keyboardShortcut("o", modifiers: .command)
 
-                ActionButton(
-                    icon: "terminal",
-                    label: "Terminal",
-                    shortcut: "⌘T",
-                    action: openInTerminal
-                )
-                .keyboardShortcut("t", modifiers: .command)
+                CompactActionButton(icon: "terminal", label: "Terminal", shortcut: "⌘T", action: openInTerminal)
+                    .keyboardShortcut("t", modifiers: .command)
 
-                ActionButton(
-                    icon: "",
-                    label: "Claude",
-                    shortcut: "⌘N",
-                    action: startNewClaudeSession,
-                    customImage: "ClaudeLogo"
-                )
-                .keyboardShortcut("n", modifiers: .command)
+                CompactActionButton(icon: "", label: "Claude", shortcut: "⌘N", customImage: "ClaudeLogo", action: startNewClaudeSession)
+                    .keyboardShortcut("n", modifiers: .command)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -269,12 +240,15 @@ struct WorktreeDetailView: View {
     // MARK: - Claude Sessions Section
 
     private var claudeSessionsSection: some View {
-        VStack(alignment: .leading, spacing: Spacing.md) {
-            SectionHeader(title: "Claude Sessions")
+        VStack(alignment: .leading, spacing: Spacing.sm) {
+            Text("RECENT SESSIONS")
+                .font(.system(size: 10, weight: .medium))
+                .foregroundColor(.textMuted)
+                .tracking(0.5)
 
             VStack(spacing: Spacing.xs) {
-                ForEach(claudeSessions.prefix(5)) { session in
-                    ClaudeSessionRow(session: session) {
+                ForEach(claudeSessions.prefix(3)) { session in
+                    CompactSessionRow(session: session) {
                         continueSession(session)
                     }
                 }
@@ -603,6 +577,105 @@ struct ActionButton: View {
         case "terminal": return "terminal.fill"
         default: return icon
         }
+    }
+}
+
+// MARK: - Compact Action Button
+
+private struct CompactActionButton: View {
+    let icon: String
+    let label: String
+    let shortcut: String
+    var customImage: String?
+    let action: () -> Void
+
+    @State private var isHovering = false
+
+    var body: some View {
+        Button(action: action) {
+            VStack(spacing: 4) {
+                ZStack {
+                    RoundedRectangle(cornerRadius: 8, style: .continuous)
+                        .fill(isHovering ? Color.bgHover : Color.bgSubtle)
+                        .frame(width: 36, height: 36)
+
+                    if let imageName = customImage {
+                        Image(imageName)
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
+                            .frame(width: 16, height: 16)
+                    } else {
+                        Image(systemName: icon)
+                            .font(.system(size: 14))
+                            .foregroundColor(isHovering ? .accent : .textSecondary)
+                    }
+                }
+
+                Text(label)
+                    .font(.system(size: 10))
+                    .foregroundColor(isHovering ? .textPrimary : .textTertiary)
+            }
+            .frame(width: 56)
+        }
+        .buttonStyle(.plain)
+        .onHover { isHovering = $0 }
+    }
+}
+
+// MARK: - Compact Session Row
+
+private struct CompactSessionRow: View {
+    let session: ClaudeSession
+    let onContinue: () -> Void
+
+    @State private var isHovering = false
+
+    var body: some View {
+        Button(action: onContinue) {
+            HStack(spacing: Spacing.sm) {
+                Image("ClaudeLogo")
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .frame(width: 16, height: 16)
+                    .opacity(0.8)
+
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(session.title)
+                        .font(.caption)
+                        .foregroundColor(.textPrimary)
+                        .lineLimit(1)
+                        .truncationMode(.tail)
+
+                    HStack(spacing: Spacing.xs) {
+                        Text(session.relativeTime)
+                            .font(.system(size: 10))
+                            .foregroundColor(.textTertiary)
+
+                        Circle()
+                            .fill(Color.textMuted)
+                            .frame(width: 2, height: 2)
+
+                        Text("\(session.messageCount) msgs")
+                            .font(.system(size: 10))
+                            .foregroundColor(.textTertiary)
+                    }
+                }
+
+                Spacer()
+
+                Image(systemName: "arrow.right")
+                    .font(.system(size: 10))
+                    .foregroundColor(isHovering ? .accent : .textMuted)
+            }
+            .padding(.horizontal, Spacing.sm)
+            .padding(.vertical, Spacing.sm)
+            .background(
+                RoundedRectangle(cornerRadius: 8, style: .continuous)
+                    .fill(isHovering ? Color.bgHover : Color.bgSubtle)
+            )
+        }
+        .buttonStyle(.plain)
+        .onHover { isHovering = $0 }
     }
 }
 
