@@ -359,7 +359,20 @@ struct WorktreeDetailView: View {
     }
 
     private func loadBranch() {
-        currentBranch = GitService.shared.getCurrentBranch(at: worktree.path)
+        // Only load branch if worktree path exists
+        guard FileManager.default.fileExists(atPath: worktree.path) else {
+            currentBranch = nil
+            return
+        }
+        // Use async to avoid blocking main thread during SwiftUI updates
+        // which can cause run loop re-entrancy crashes
+        let path = worktree.path
+        Task {
+            let branch = await GitService.shared.getCurrentBranchAsync(at: path)
+            await MainActor.run {
+                currentBranch = branch
+            }
+        }
     }
 
     private func loadClaudeSessions() {

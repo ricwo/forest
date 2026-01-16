@@ -152,8 +152,18 @@ class AppState {
         guard let index = repositories.firstIndex(where: { $0.id == repoId }) else { return }
         let repo = repositories[index]
 
-        let worktreePath = forestDirectory
-            .appendingPathComponent(repo.name)
+        // Validate repo source path exists
+        guard FileManager.default.fileExists(atPath: repo.sourcePath) else {
+            throw NSError(domain: "Forest", code: 1, userInfo: [
+                NSLocalizedDescriptionKey: "Repository source path no longer exists: \(repo.sourcePath)"
+            ])
+        }
+
+        // Ensure parent directory exists
+        let repoDir = forestDirectory.appendingPathComponent(repo.name)
+        try FileManager.default.createDirectory(at: repoDir, withIntermediateDirectories: true)
+
+        let worktreePath = repoDir
             .appendingPathComponent(name)
             .path
 
