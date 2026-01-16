@@ -12,8 +12,10 @@ struct WorktreeDetailView: View {
     @State private var errorMessage: String?
     @State private var showDeleteConfirmation = false
     @State private var showArchiveConfirmation = false
+    @State private var showRemoveFromForestConfirmation = false
     @State private var claudeSessions: [ClaudeSession] = []
     @State private var currentBranch: String?
+    @State private var isValidWorktree: Bool = true
 
     // Auto-refresh timer (every 3 seconds)
     private let refreshTimer = Timer.publish(every: 3, on: .main, in: .common).autoconnect()
@@ -79,6 +81,14 @@ struct WorktreeDetailView: View {
             }
         } message: {
             Text("This will run `git worktree remove` which permanently deletes the directory at:\n\n\(worktree.path)\n\nThis cannot be undone.")
+        }
+        .alert("Remove from Forest?", isPresented: $showRemoveFromForestConfirmation) {
+            Button("Cancel", role: .cancel) {}
+            Button("Remove", role: .destructive) {
+                appState.forgetWorktree(worktree, from: repositoryId)
+            }
+        } message: {
+            Text("This worktree is no longer a valid git working tree. Remove it from Forest?\n\nThis only removes it from Forest's list—no files will be deleted.")
         }
     }
 
@@ -170,6 +180,41 @@ struct WorktreeDetailView: View {
 
     private var infoSection: some View {
         VStack(alignment: .leading, spacing: Spacing.xs) {
+            // Invalid worktree warning
+            if !isValidWorktree {
+                HStack(spacing: Spacing.sm) {
+                    Image(systemName: "exclamationmark.triangle.fill")
+                        .font(.system(size: 14))
+                        .foregroundColor(.yellow)
+
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Invalid Worktree")
+                            .font(.captionMedium)
+                            .foregroundColor(.textPrimary)
+
+                        Text("This directory is no longer a valid git worktree.")
+                            .font(.caption)
+                            .foregroundColor(.textSecondary)
+                    }
+
+                    Spacer()
+
+                    Button("Remove") {
+                        showRemoveFromForestConfirmation = true
+                    }
+                    .buttonStyle(DestructiveButtonStyle())
+                }
+                .padding(Spacing.md)
+                .background(
+                    RoundedRectangle(cornerRadius: 8, style: .continuous)
+                        .fill(Color.yellow.opacity(0.1))
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 8, style: .continuous)
+                        .strokeBorder(Color.yellow.opacity(0.3), lineWidth: 1)
+                )
+            }
+
             HStack(spacing: Spacing.sm) {
                 Text(worktree.path)
                     .font(.monoSmall)
@@ -354,22 +399,21 @@ struct WorktreeDetailView: View {
     }
 
     private func refreshAll() {
-        loadBranch()
+        loadWorktreeInfo()
         loadClaudeSessions()
     }
 
-    private func loadBranch() {
-        // Only load branch if worktree path exists
-        guard FileManager.default.fileExists(atPath: worktree.path) else {
-            currentBranch = nil
-            return
-        }
-        // Use async to avoid blocking main thread during SwiftUI updates
-        // which can cause run loop re-entrancy crashes
+    private func loadWorktreeInfo() {
         let path = worktree.path
         Task {
-            let branch = await GitService.shared.getCurrentBranchAsync(at: path)
+            // First check if worktree is valid
+            let valid = await GitService.shared.isValidWorktreeAsync(at: path)
+
+            // Only load branch if worktree is valid
+            let branch: String? = valid ? await GitService.shared.getCurrentBranchAsync(at: path) : nil
+
             await MainActor.run {
+                isValidWorktree = valid
                 currentBranch = branch
             }
         }

@@ -36,6 +36,29 @@ struct GitService {
         return result.exitCode == 0
     }
 
+    /// Check if the path is a valid git worktree (not just a directory)
+    func isValidWorktree(at path: String) -> Bool {
+        // First check if directory exists
+        var isDirectory: ObjCBool = false
+        guard FileManager.default.fileExists(atPath: path, isDirectory: &isDirectory),
+              isDirectory.boolValue else {
+            return false
+        }
+        // Then check if it's a valid git working tree
+        let result = runGit(["rev-parse", "--is-inside-work-tree"], in: path)
+        return result.exitCode == 0 && result.output.trimmingCharacters(in: .whitespacesAndNewlines) == "true"
+    }
+
+    /// Async version for UI use
+    func isValidWorktreeAsync(at path: String) async -> Bool {
+        await withCheckedContinuation { continuation in
+            DispatchQueue.global(qos: .userInitiated).async {
+                let result = self.isValidWorktree(at: path)
+                continuation.resume(returning: result)
+            }
+        }
+    }
+
     func getRepositoryName(at path: String) -> String {
         let url = URL(fileURLWithPath: path)
         return url.lastPathComponent

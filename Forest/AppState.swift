@@ -194,6 +194,18 @@ class AppState {
         saveConfig()
     }
 
+    /// Remove a worktree from Forest's config without running git commands.
+    /// Use this for worktrees that no longer exist or are invalid.
+    func forgetWorktree(_ worktree: Worktree, from repoId: UUID) {
+        guard let repoIndex = repositories.firstIndex(where: { $0.id == repoId }) else { return }
+
+        repositories[repoIndex].worktrees.removeAll { $0.id == worktree.id }
+        if selectedWorktreeId == worktree.id {
+            selectedWorktreeId = nil
+        }
+        saveConfig()
+    }
+
     func archiveWorktree(_ worktreeId: UUID, in repoId: UUID) {
         guard let repoIndex = repositories.firstIndex(where: { $0.id == repoId }),
               let worktreeIndex = repositories[repoIndex].worktrees.firstIndex(where: { $0.id == worktreeId })
