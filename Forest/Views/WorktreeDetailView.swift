@@ -404,6 +404,7 @@ struct WorktreeDetailView: View {
     }
 
     private func loadWorktreeInfo() {
+        let worktreeId = worktree.id
         let path = worktree.path
         Task {
             // First check if worktree is valid
@@ -413,6 +414,8 @@ struct WorktreeDetailView: View {
             let branch: String? = valid ? await GitService.shared.getCurrentBranchAsync(at: path) : nil
 
             await MainActor.run {
+                // Guard against stale updates if user navigated away
+                guard worktree.id == worktreeId else { return }
                 isValidWorktree = valid
                 currentBranch = branch
             }

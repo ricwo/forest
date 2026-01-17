@@ -215,10 +215,13 @@ struct RepositoryDetailView: View {
         }
         // Use async to avoid blocking main thread during SwiftUI updates
         // which can cause run loop re-entrancy crashes
+        let repoId = repository.id
         let path = repository.sourcePath
         Task {
             let branch = await GitService.shared.getCurrentBranchAsync(at: path)
             await MainActor.run {
+                // Guard against stale updates if user navigated away
+                guard repository.id == repoId else { return }
                 currentBranch = branch
             }
         }
