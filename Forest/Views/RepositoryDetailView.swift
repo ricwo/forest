@@ -208,7 +208,23 @@ struct RepositoryDetailView: View {
     }
 
     private func loadBranch() {
-        currentBranch = GitService.shared.getCurrentBranch(at: repository.sourcePath)
+        // Only load branch if repository source path exists
+        guard FileManager.default.fileExists(atPath: repository.sourcePath) else {
+            currentBranch = nil
+            return
+        }
+        // Use async to avoid blocking main thread during SwiftUI updates
+        // which can cause run loop re-entrancy crashes
+        let repoId = repository.id
+        let path = repository.sourcePath
+        Task {
+            let branch = await GitService.shared.getCurrentBranchAsync(at: path)
+            await MainActor.run {
+                // Guard against stale updates if user navigated away
+                guard repository.id == repoId else { return }
+                currentBranch = branch
+            }
+        }
     }
 
     private func loadClaudeSessions() {

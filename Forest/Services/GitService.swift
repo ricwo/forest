@@ -36,6 +36,29 @@ struct GitService {
         return result.exitCode == 0
     }
 
+    /// Check if the path is a valid git worktree (not just a directory)
+    func isValidWorktree(at path: String) -> Bool {
+        // First check if directory exists
+        var isDirectory: ObjCBool = false
+        guard FileManager.default.fileExists(atPath: path, isDirectory: &isDirectory),
+              isDirectory.boolValue else {
+            return false
+        }
+        // Then check if it's a valid git working tree
+        let result = runGit(["rev-parse", "--is-inside-work-tree"], in: path)
+        return result.exitCode == 0 && result.output.trimmingCharacters(in: .whitespacesAndNewlines) == "true"
+    }
+
+    /// Async version for UI use
+    func isValidWorktreeAsync(at path: String) async -> Bool {
+        await withCheckedContinuation { continuation in
+            DispatchQueue.global(qos: .userInitiated).async {
+                let result = self.isValidWorktree(at: path)
+                continuation.resume(returning: result)
+            }
+        }
+    }
+
     func getRepositoryName(at path: String) -> String {
         let url = URL(fileURLWithPath: path)
         return url.lastPathComponent
@@ -45,6 +68,17 @@ struct GitService {
         let result = runGit(["branch", "--show-current"], in: path)
         guard result.exitCode == 0 else { return nil }
         return result.output.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    /// Async version of getCurrentBranch that runs off the main thread
+    /// Use this from SwiftUI views to avoid blocking the main thread during UI updates
+    func getCurrentBranchAsync(at path: String) async -> String? {
+        await withCheckedContinuation { continuation in
+            DispatchQueue.global(qos: .userInitiated).async {
+                let result = self.getCurrentBranch(at: path)
+                continuation.resume(returning: result)
+            }
+        }
     }
 
     func listBranches(at path: String) -> [String] {
@@ -123,10 +157,18 @@ struct GitService {
     }
 
     private func runGit(_ arguments: [String], in directory: String) -> GitResult {
+        // Validate directory exists before running git command
+        let directoryURL = URL(fileURLWithPath: directory)
+        var isDirectory: ObjCBool = false
+        guard FileManager.default.fileExists(atPath: directory, isDirectory: &isDirectory),
+              isDirectory.boolValue else {
+            return GitResult(output: "", error: "Directory does not exist: \(directory)", exitCode: -1)
+        }
+
         let process = Process()
         process.executableURL = URL(fileURLWithPath: "/usr/bin/git")
         process.arguments = arguments
-        process.currentDirectoryURL = URL(fileURLWithPath: directory)
+        process.currentDirectoryURL = directoryURL
 
         let outputPipe = Pipe()
         let errorPipe = Pipe()
@@ -139,7 +181,8 @@ struct GitService {
             return GitResult(output: "", error: error.localizedDescription, exitCode: -1)
         }
 
-        // Read output in background threads to avoid pipe buffer deadlock
+        // Read output synchronously after process exits to avoid pipe buffer deadlock
+        // We read pipes in background but wait for process first to ensure clean shutdown
         var outputData = Data()
         var errorData = Data()
 

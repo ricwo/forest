@@ -152,8 +152,18 @@ class AppState {
         guard let index = repositories.firstIndex(where: { $0.id == repoId }) else { return }
         let repo = repositories[index]
 
-        let worktreePath = forestDirectory
-            .appendingPathComponent(repo.name)
+        // Validate repo source path exists
+        guard FileManager.default.fileExists(atPath: repo.sourcePath) else {
+            throw NSError(domain: "Forest", code: 1, userInfo: [
+                NSLocalizedDescriptionKey: "Repository source path no longer exists: \(repo.sourcePath)"
+            ])
+        }
+
+        // Ensure parent directory exists
+        let repoDir = forestDirectory.appendingPathComponent(repo.name)
+        try FileManager.default.createDirectory(at: repoDir, withIntermediateDirectories: true)
+
+        let worktreePath = repoDir
             .appendingPathComponent(name)
             .path
 
@@ -176,6 +186,18 @@ class AppState {
 
         // Remove from git (this also removes the directory)
         try GitService.shared.removeWorktree(repoPath: repo.sourcePath, worktreePath: worktree.path)
+
+        repositories[repoIndex].worktrees.removeAll { $0.id == worktree.id }
+        if selectedWorktreeId == worktree.id {
+            selectedWorktreeId = nil
+        }
+        saveConfig()
+    }
+
+    /// Remove a worktree from Forest's config without running git commands.
+    /// Use this for worktrees that no longer exist or are invalid.
+    func forgetWorktree(_ worktree: Worktree, from repoId: UUID) {
+        guard let repoIndex = repositories.firstIndex(where: { $0.id == repoId }) else { return }
 
         repositories[repoIndex].worktrees.removeAll { $0.id == worktree.id }
         if selectedWorktreeId == worktree.id {
