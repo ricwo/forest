@@ -1,9 +1,31 @@
 import Foundation
 import SwiftUI
 
+struct DeleteError: Identifiable {
+    let id = UUID()
+    let worktreeName: String
+    let worktreePath: String
+    let message: String
+}
+
+struct DirtyWorktreeConfirmation: Identifiable {
+    let id = UUID()
+    let worktree: Worktree
+    let repoId: UUID
+    let repoSourcePath: String
+}
+
 enum Selection: Equatable {
     case repository(UUID)
     case worktree(UUID)
+}
+
+enum FetchStatus: Equatable {
+    case idle
+    case fetching
+    case success
+    case warning(String)
+    case error(String)
 }
 
 @Observable
@@ -11,6 +33,9 @@ class AppState {
     var repositories: [Repository] = []
     var selection: Selection?
     var showArchived: Bool = false
+    var fetchStatuses: [UUID: FetchStatus] = [:]
+    var deleteError: DeleteError?
+    var dirtyWorktreeConfirmation: DirtyWorktreeConfirmation?
 
     // Legacy compatibility - maps to selection
     var selectedRepositoryId: UUID? {
@@ -180,18 +205,59 @@ class AppState {
         saveConfig()
     }
 
-    func deleteWorktree(_ worktree: Worktree, from repoId: UUID) throws {
+    func deleteWorktree(_ worktree: Worktree, from repoId: UUID) {
+        guard let repo = repositories.first(where: { $0.id == repoId }) else { return }
+
+        Task {
+            let isDirty = await GitService.shared.worktreeHasChangesAsync(at: worktree.path)
+            await MainActor.run {
+                if isDirty {
+                    self.dirtyWorktreeConfirmation = DirtyWorktreeConfirmation(
+                        worktree: worktree, repoId: repoId, repoSourcePath: repo.sourcePath
+                    )
+                } else {
+                    self.performDeleteWorktree(worktree, from: repoId, repoSourcePath: repo.sourcePath, force: false)
+                }
+            }
+        }
+    }
+
+    func confirmDeleteDirtyWorktree() {
+        guard let confirmation = dirtyWorktreeConfirmation else { return }
+        dirtyWorktreeConfirmation = nil
+        performDeleteWorktree(
+            confirmation.worktree, from: confirmation.repoId,
+            repoSourcePath: confirmation.repoSourcePath, force: true
+        )
+    }
+
+    private func performDeleteWorktree(_ worktree: Worktree, from repoId: UUID, repoSourcePath: String, force: Bool) {
         guard let repoIndex = repositories.firstIndex(where: { $0.id == repoId }) else { return }
-        let repo = repositories[repoIndex]
+        let worktreePath = worktree.path
+        let worktreeName = worktree.name
 
-        // Remove from git (this also removes the directory)
-        try GitService.shared.removeWorktree(repoPath: repo.sourcePath, worktreePath: worktree.path)
-
+        // Phase 1: Optimistic UI update (instant)
         repositories[repoIndex].worktrees.removeAll { $0.id == worktree.id }
         if selectedWorktreeId == worktree.id {
             selectedWorktreeId = nil
         }
         saveConfig()
+
+        // Phase 2: Background git removal
+        Task {
+            let error = await GitService.shared.removeWorktreeAsync(
+                repoPath: repoSourcePath, worktreePath: worktreePath, force: force
+            )
+            if let error {
+                await MainActor.run {
+                    self.deleteError = DeleteError(
+                        worktreeName: worktreeName,
+                        worktreePath: worktreePath,
+                        message: error
+                    )
+                }
+            }
+        }
     }
 
     /// Remove a worktree from Forest's config without running git commands.
@@ -356,6 +422,38 @@ class AppState {
         guard let index = repositories.firstIndex(where: { $0.id == repoId }) else { return }
         repositories[index].claudeCommand = command
         saveConfig()
+    }
+
+    // MARK: - Fetch
+
+    func fetchStatus(for repoId: UUID) -> FetchStatus {
+        fetchStatuses[repoId] ?? .idle
+    }
+
+    func fetchRepository(_ repoId: UUID) async {
+        guard fetchStatus(for: repoId) != .fetching else { return }
+        guard let repo = repositories.first(where: { $0.id == repoId }) else { return }
+
+        fetchStatuses[repoId] = .fetching
+
+        let result = await GitService.shared.fetchRepositoryAsync(at: repo.sourcePath)
+
+        if result.isFullSuccess {
+            fetchStatuses[repoId] = .success
+            // Auto-clear success after 3 seconds
+            let id = repoId
+            Task { @MainActor in
+                try? await Task.sleep(nanoseconds: 3_000_000_000)
+                if self.fetchStatuses[id] == .success {
+                    self.fetchStatuses[id] = .idle
+                }
+            }
+        } else if !result.fetchSucceeded {
+            fetchStatuses[repoId] = .error(result.summaryMessage)
+        } else {
+            // Fetch succeeded but pull had issues — that's a warning
+            fetchStatuses[repoId] = .warning(result.summaryMessage)
+        }
     }
 
     // MARK: - Helpers

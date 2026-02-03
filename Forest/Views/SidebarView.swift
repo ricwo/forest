@@ -102,7 +102,6 @@ struct SidebarView: View {
     @State private var worktreeSheetRepoId: UUID?
     @State private var repoToRemove: Repository?
     @State private var worktreeToDelete: (worktree: Worktree, repoId: UUID)?
-    @State private var deleteError: String?
     @State private var repoDropTargetId: UUID?
     @State private var worktreeDropTarget: (worktreeId: UUID, repoId: UUID)?
     @State private var draggingFromRepoId: UUID?
@@ -217,24 +216,12 @@ struct SidebarView: View {
             Button("Cancel", role: .cancel) { worktreeToDelete = nil }
             Button("Delete", role: .destructive) {
                 if let (worktree, repoId) = worktreeToDelete {
-                    do {
-                        try appState.deleteWorktree(worktree, from: repoId)
-                    } catch {
-                        deleteError = error.localizedDescription
-                    }
+                    appState.deleteWorktree(worktree, from: repoId)
                 }
                 worktreeToDelete = nil
             }
         } message: {
             Text("This will permanently delete \"\(worktreeToDelete?.worktree.name ?? "")\" and remove it from git.")
-        }
-        .alert("Error", isPresented: Binding(
-            get: { deleteError != nil },
-            set: { if !$0 { deleteError = nil } }
-        )) {
-            Button("OK") { deleteError = nil }
-        } message: {
-            Text(deleteError ?? "")
         }
         .alert("Update Available", isPresented: $showUpdateAlert) {
             Button("Later", role: .cancel) {}

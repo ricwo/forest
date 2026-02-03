@@ -358,11 +358,7 @@ struct WorktreeDetailView: View {
     }
 
     private func deleteWorktree() {
-        do {
-            try appState.deleteWorktree(worktree, from: repositoryId)
-        } catch {
-            errorMessage = error.localizedDescription
-        }
+        appState.deleteWorktree(worktree, from: repositoryId)
     }
 
     private func openInTerminal() {
