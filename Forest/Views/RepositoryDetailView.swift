@@ -94,6 +94,8 @@ struct RepositoryDetailView: View {
 
             Spacer()
 
+            FetchButton(repoId: repository.id)
+
             Button {
                 showSettings = true
             } label: {
@@ -265,6 +267,147 @@ struct RepositoryDetailView: View {
         if let error = TerminalService.shared.runInTerminal(script, preferredTerminal: terminal) {
             errorMessage = error
         }
+    }
+}
+
+// MARK: - Fetch Button
+
+private struct FetchButton: View {
+    @Environment(AppState.self) private var appState
+    let repoId: UUID
+
+    @State private var showPopover = false
+
+    private var status: FetchStatus {
+        appState.fetchStatus(for: repoId)
+    }
+
+    var body: some View {
+        Button {
+            handleTap()
+        } label: {
+            HStack(spacing: 5) {
+                switch status {
+                case .idle:
+                    Image(systemName: "arrow.triangle.2.circlepath")
+                        .font(.system(size: 11))
+                    Text("Fetch")
+                        .font(.system(size: 11, weight: .medium))
+                case .fetching:
+                    ProgressView()
+                        .controlSize(.small)
+                        .scaleEffect(0.7)
+                    Text("Fetching...")
+                        .font(.system(size: 11, weight: .medium))
+                case .success:
+                    Image(systemName: "checkmark")
+                        .font(.system(size: 11, weight: .semibold))
+                    Text("Fetched")
+                        .font(.system(size: 11, weight: .medium))
+                case .warning:
+                    Image(systemName: "exclamationmark.triangle.fill")
+                        .font(.system(size: 11))
+                    Text("Fetched")
+                        .font(.system(size: 11, weight: .medium))
+                case .error:
+                    Image(systemName: "xmark.circle.fill")
+                        .font(.system(size: 11))
+                    Text("Failed")
+                        .font(.system(size: 11, weight: .medium))
+                }
+            }
+            .foregroundColor(foregroundColor)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 6)
+            .background(backgroundColor)
+            .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
+        }
+        .buttonStyle(.plain)
+        .disabled(status == .fetching)
+        .help(helpText)
+        .popover(isPresented: $showPopover, arrowEdge: .bottom) {
+            popoverContent
+        }
+    }
+
+    private var foregroundColor: Color {
+        switch status {
+        case .idle: return .accent
+        case .fetching: return .textTertiary
+        case .success: return .success
+        case .warning: return .warning
+        case .error: return .destructive
+        }
+    }
+
+    private var backgroundColor: Color {
+        switch status {
+        case .idle: return .accentLight
+        case .fetching: return Color.bgSubtle
+        case .success: return Color.success.opacity(0.1)
+        case .warning: return Color.warning.opacity(0.1)
+        case .error: return Color.destructive.opacity(0.1)
+        }
+    }
+
+    private var helpText: String {
+        switch status {
+        case .idle: return "Fetch from all remotes"
+        case .fetching: return "Fetching..."
+        case .success: return "Fetch complete"
+        case .warning(let msg): return msg
+        case .error(let msg): return msg
+        }
+    }
+
+    private func handleTap() {
+        switch status {
+        case .idle:
+            Task { await appState.fetchRepository(repoId) }
+        case .warning, .error:
+            showPopover = true
+        case .fetching, .success:
+            break
+        }
+    }
+
+    @ViewBuilder
+    private var popoverContent: some View {
+        VStack(alignment: .leading, spacing: Spacing.sm) {
+            switch status {
+            case .warning(let msg):
+                HStack(spacing: Spacing.xs) {
+                    Image(systemName: "exclamationmark.triangle.fill")
+                        .foregroundColor(.warning)
+                        .font(.system(size: 12))
+                    Text(msg)
+                        .font(.caption)
+                        .foregroundColor(.textSecondary)
+                }
+            case .error(let msg):
+                HStack(spacing: Spacing.xs) {
+                    Image(systemName: "xmark.circle.fill")
+                        .foregroundColor(.destructive)
+                        .font(.system(size: 12))
+                    Text(msg)
+                        .font(.caption)
+                        .foregroundColor(.textSecondary)
+                }
+                Button {
+                    showPopover = false
+                    Task { await appState.fetchRepository(repoId) }
+                } label: {
+                    Text("Retry")
+                        .font(.caption)
+                }
+                .buttonStyle(.borderedProminent)
+                .controlSize(.small)
+            default:
+                EmptyView()
+            }
+        }
+        .padding(Spacing.md)
+        .frame(maxWidth: 280)
     }
 }
 

@@ -19,6 +19,35 @@ struct ContentView: View {
             detailView
         }
         .background(Color.bg)
+        .alert("Worktree removal failed",
+            isPresented: Binding(
+                get: { appState.deleteError != nil },
+                set: { if !$0 { appState.deleteError = nil } }
+            )
+        ) {
+            Button("OK") { appState.deleteError = nil }
+        } message: {
+            if let err = appState.deleteError {
+                Text("Could not remove \"\(err.worktreeName)\" from git.\n\nThe directory may need manual cleanup:\n\(err.worktreePath)\n\n\(err.message)")
+            }
+        }
+        .alert("Worktree Has Unsaved Changes",
+            isPresented: Binding(
+                get: { appState.dirtyWorktreeConfirmation != nil },
+                set: { if !$0 { appState.dirtyWorktreeConfirmation = nil } }
+            )
+        ) {
+            Button("Cancel", role: .cancel) {
+                appState.dirtyWorktreeConfirmation = nil
+            }
+            Button("Delete Anyway", role: .destructive) {
+                appState.confirmDeleteDirtyWorktree()
+            }
+        } message: {
+            if let confirmation = appState.dirtyWorktreeConfirmation {
+                Text("\"\(confirmation.worktree.name)\" has uncommitted or untracked files that will be permanently lost.")
+            }
+        }
     }
 
     @ViewBuilder

@@ -20,6 +20,39 @@ enum GitError: Error, LocalizedError {
     }
 }
 
+enum PullResult: Equatable {
+    case success
+    case notFastForwardable
+    case dirtyWorkingDirectory
+    case failed(String)
+}
+
+struct FetchResult {
+    let fetchSucceeded: Bool
+    let fetchError: String?
+    let pullResult: PullResult?
+
+    var isFullSuccess: Bool {
+        fetchSucceeded && pullResult == .success
+    }
+
+    var summaryMessage: String {
+        if !fetchSucceeded {
+            return fetchError ?? "Fetch failed"
+        }
+        switch pullResult {
+        case .success, nil:
+            return "Fetched"
+        case .notFastForwardable:
+            return "Fetched. Pull skipped: branches have diverged."
+        case .dirtyWorkingDirectory:
+            return "Fetched. Pull skipped: working directory has changes."
+        case .failed(let msg):
+            return "Fetched. Pull failed: \(msg)"
+        }
+    }
+}
+
 private struct GitResult {
     let output: String
     let error: String
@@ -154,6 +187,85 @@ struct GitService {
         }
 
         return worktrees
+    }
+
+    func fetchAll(at path: String) throws {
+        let result = runGit(["fetch", "--all", "--prune"], in: path)
+        if result.exitCode != 0 {
+            throw GitError.commandFailed(result.error.isEmpty ? result.output : result.error)
+        }
+    }
+
+    func pullFastForwardOnly(at path: String) -> PullResult {
+        let result = runGit(["pull", "--ff-only"], in: path)
+        if result.exitCode == 0 {
+            return .success
+        }
+        let combined = (result.error + " " + result.output).lowercased()
+        if combined.contains("not possible to fast-forward") || combined.contains("divergent branches") {
+            return .notFastForwardable
+        }
+        if combined.contains("uncommitted changes") || combined.contains("unstaged changes")
+            || combined.contains("your local changes") {
+            return .dirtyWorkingDirectory
+        }
+        return .failed(result.error.trimmingCharacters(in: .whitespacesAndNewlines))
+    }
+
+    func removeWorktreeAsync(repoPath: String, worktreePath: String, force: Bool = false) async -> String? {
+        await withCheckedContinuation { continuation in
+            DispatchQueue.global(qos: .userInitiated).async {
+                var args = ["worktree", "remove"]
+                if force {
+                    args.append("--force")
+                }
+                args.append(worktreePath)
+                let result = self.runGit(args, in: repoPath)
+                if result.exitCode != 0 {
+                    continuation.resume(returning: result.error.isEmpty ? result.output : result.error)
+                } else {
+                    continuation.resume(returning: nil)
+                }
+            }
+        }
+    }
+
+    func worktreeHasChangesAsync(at path: String) async -> Bool {
+        await withCheckedContinuation { continuation in
+            DispatchQueue.global(qos: .userInitiated).async {
+                let result = self.runGit(["status", "--porcelain"], in: path)
+                let hasChanges = result.exitCode == 0
+                    && !result.output.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+                continuation.resume(returning: hasChanges)
+            }
+        }
+    }
+
+    func fetchRepositoryAsync(at path: String) async -> FetchResult {
+        await withCheckedContinuation { continuation in
+            DispatchQueue.global(qos: .userInitiated).async {
+                var fetchSucceeded = true
+                var fetchError: String?
+                var pullResult: PullResult?
+
+                do {
+                    try self.fetchAll(at: path)
+                } catch {
+                    fetchSucceeded = false
+                    fetchError = error.localizedDescription
+                    continuation.resume(returning: FetchResult(
+                        fetchSucceeded: false, fetchError: fetchError, pullResult: nil
+                    ))
+                    return
+                }
+
+                pullResult = self.pullFastForwardOnly(at: path)
+
+                continuation.resume(returning: FetchResult(
+                    fetchSucceeded: fetchSucceeded, fetchError: fetchError, pullResult: pullResult
+                ))
+            }
+        }
     }
 
     private func runGit(_ arguments: [String], in directory: String) -> GitResult {
