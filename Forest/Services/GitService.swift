@@ -138,6 +138,16 @@ struct GitService {
         if result.exitCode != 0 {
             throw GitError.commandFailed(result.error.isEmpty ? result.output : result.error)
         }
+
+        // Set upstream tracking so git pull/push work out of the box
+        if createBranch {
+            let pushResult = runGit(["push", "--set-upstream", "origin", branch], in: worktreePath)
+            if pushResult.exitCode != 0 {
+                // Upstream push failed — fall back to local config so push -u works later
+                _ = runGit(["config", "branch.\(branch).remote", "origin"], in: worktreePath)
+                _ = runGit(["config", "branch.\(branch).merge", "refs/heads/\(branch)"], in: worktreePath)
+            }
+        }
     }
 
     func removeWorktree(repoPath: String, worktreePath: String) throws {

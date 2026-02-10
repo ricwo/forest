@@ -235,6 +235,18 @@ struct WorktreeDetailView: View {
                 .help("Copy path")
             }
 
+            if worktree.createdAt != .distantPast {
+                HStack(spacing: Spacing.xs) {
+                    Image(systemName: "calendar")
+                        .font(.system(size: 10))
+                        .foregroundColor(.textMuted)
+
+                    Text("Created \(worktree.createdAt.formatted(date: .abbreviated, time: .shortened))")
+                        .font(.caption)
+                        .foregroundColor(.textTertiary)
+                }
+            }
+
             if let error = errorMessage {
                 HStack(spacing: Spacing.xs) {
                     Image(systemName: "exclamationmark.triangle.fill")

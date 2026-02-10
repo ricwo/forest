@@ -3,6 +3,10 @@ import SwiftUI
 struct ContentView: View {
     @Environment(AppState.self) private var appState
     @State private var settingsService = SettingsService.shared
+    @State private var sidebarWidth: CGFloat = 240
+
+    private let minSidebarWidth: CGFloat = 180
+    private let maxSidebarWidth: CGFloat = 400
 
     var body: some View {
         // swiftlint:disable:next redundant_discardable_let
@@ -10,11 +14,9 @@ struct ContentView: View {
 
         HStack(spacing: 0) {
             SidebarView()
-                .frame(width: 240)
+                .frame(width: sidebarWidth)
 
-            Rectangle()
-                .fill(Color.border)
-                .frame(width: 1)
+            SidebarDivider(sidebarWidth: $sidebarWidth, minWidth: minSidebarWidth, maxWidth: maxSidebarWidth)
 
             detailView
         }
@@ -112,6 +114,59 @@ struct EmptyStateView: View {
                 )
             }
         )
+    }
+}
+
+// MARK: - Sidebar Divider
+
+private struct SidebarDivider: View {
+    @Binding var sidebarWidth: CGFloat
+    let minWidth: CGFloat
+    let maxWidth: CGFloat
+
+    @State private var isHovering = false
+    @State private var isDragging = false
+    @State private var dragStartWidth: CGFloat = 0
+
+    private var isActive: Bool { isDragging || isHovering }
+
+    var body: some View {
+        Rectangle()
+            .fill(isActive ? Color.accent.opacity(isDragging ? 0.5 : 0.3) : Color.border)
+            .frame(width: 1)
+            .frame(width: 7)  // fixed layout slot; wider hit target
+            .contentShape(Rectangle())
+            .onHover { hovering in
+                if !isDragging { isHovering = hovering }
+            }
+            .onContinuousHover { phase in
+                if isDragging { return }
+                switch phase {
+                case .active:
+                    NSCursor.resizeLeftRight.push()
+                case .ended:
+                    NSCursor.pop()
+                }
+            }
+            .gesture(
+                DragGesture(minimumDistance: 1, coordinateSpace: .global)
+                    .onChanged { value in
+                        if !isDragging {
+                            isDragging = true
+                            dragStartWidth = sidebarWidth
+                            NSCursor.resizeLeftRight.push()
+                        }
+                        var transaction = Transaction()
+                        transaction.animation = nil
+                        withTransaction(transaction) {
+                            sidebarWidth = round(min(max(dragStartWidth + value.translation.width, minWidth), maxWidth))
+                        }
+                    }
+                    .onEnded { _ in
+                        isDragging = false
+                        NSCursor.pop()
+                    }
+            )
     }
 }
 

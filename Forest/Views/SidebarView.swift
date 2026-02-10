@@ -510,6 +510,8 @@ struct WorktreeListRow: View {
     let onDelete: () -> Void
 
     @State private var isHovering = false
+    @State private var now = Date()
+    private let timer = Timer.publish(every: 30, on: .main, in: .common).autoconnect()
 
     var body: some View {
         HStack(spacing: Spacing.sm) {
@@ -537,9 +539,22 @@ struct WorktreeListRow: View {
                     .font(.bodyMedium)
                     .foregroundColor(isSelected ? .textPrimary : .textSecondary)
 
-                Text(worktree.branch)
-                    .font(.monoSmall)
-                    .foregroundColor(.textTertiary)
+                HStack(spacing: Spacing.xs) {
+                    Text(worktree.branch)
+                        .font(.monoSmall)
+                        .foregroundColor(.textTertiary)
+
+                    let relTime = worktree.relativeCreatedTime(now: now)
+                    if !relTime.isEmpty {
+                        Circle()
+                            .fill(Color.textMuted)
+                            .frame(width: 2, height: 2)
+
+                        Text(relTime)
+                            .font(.system(size: 10))
+                            .foregroundColor(.textMuted)
+                    }
+                }
             }
 
             Spacer()
@@ -586,6 +601,7 @@ struct WorktreeListRow: View {
         .animation(.quick, value: isSelected)
         .animation(.quick, value: isHovering)
         .animation(.quick, value: isDragging)
+        .onReceive(timer) { now = $0 }
     }
 }
 
